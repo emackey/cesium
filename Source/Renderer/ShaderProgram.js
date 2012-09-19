@@ -329,6 +329,9 @@ define([
             case _gl.FLOAT_VEC4:
                 return function() {
                     var v = this.value;
+                    if (activeUniform.name == 'czm_viewport') {
+                        console.log('Inside setter for czm_viewport ' + JSON.stringify(this.value));
+                    }
 
                     if (typeof v.red !== 'undefined') {
                         _gl.uniform4f(_location, v.red, v.green, v.blue, v.alpha);
@@ -606,6 +609,7 @@ define([
                                     z : v.width,
                                     w : v.height
                                 };
+                                console.log('czm_viewport set to ' + JSON.stringify(uniform.value));
                             }
                         };
                     }

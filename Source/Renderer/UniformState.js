@@ -29,6 +29,7 @@ define([
     var UniformState = function(context) {
         this._context = context;
         this._viewport = new BoundingRectangle();
+        console.log('UniformState._viewport initialized: ' + JSON.stringify(this._viewport));
         this._viewportDirty = false;
         this._viewportOrthographicMatrix = Matrix4.IDENTITY.clone();
         this._viewportTransformation = Matrix4.IDENTITY.clone();
@@ -99,6 +100,7 @@ define([
     UniformState.prototype.setViewport = function(viewport) {
         if (!BoundingRectangle.equals(viewport, this._viewport)) {
             BoundingRectangle.clone(viewport, this._viewport);
+            console.log('UniformState.prototype.setViewport +dirty ', JSON.stringify(this._viewport));
             this._viewportDirty = true;
         }
     };
@@ -123,6 +125,7 @@ define([
             Matrix4.computeOrthographicOffCenter(v.x, v.x + v.width, v.y, v.y + v.height, 0.0, 1.0, this._viewportOrthographicMatrix);
             Matrix4.computeViewportTransformation(v, 0.0, 1.0, this._viewportTransformation);
             this._viewportDirty = false;
+            console.log('UniformState.prototype._cleanViewport ', JSON.stringify(this._viewport));
         }
     };
 
