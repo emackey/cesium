@@ -68,20 +68,31 @@ html, body {
 }
 
 #demos {
-    padding: 5px;
+    padding: 0 5px 5px;
     white-space: nowrap;
 }
 
 .demoTileThumbnail {	
     max-height: 150px;
     max-width: 225px;
-    height: 125px;
+    height: 111px;
     width: auto;
 }
 
 .demoTileTitle {
     margin: 0 auto 2px auto;
     font-size: 0.9em;
+}
+
+.demoTooltipType {
+    text-align: center;
+    color: #888;
+    margin-bottom: 5px;
+    padding-right: 10px;
+}
+
+.subInfo {
+    font-size: 11px;
 }
 
 .galleryError {

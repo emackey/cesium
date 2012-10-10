@@ -4,19 +4,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">  <!-- Use Chrome Frame in IE -->
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-    <meta name="description" content="Construct and apply materials to rectangular, complex conic, and custom sensors.">
+    <meta name="description" content="Construct and apply materials to rectangular and custom sensors.">
     <title>Cesium Demo</title>
-    <script>
-    var Sandcastle = {};
-    Sandcastle.declare = function () {};
-    Sandcastle.highlight = function () {};
-    Sandcastle.registered = [];
-    if (window.location.protocol === 'file:') {
-        if (confirm("You must host this app on a web server.\nSee contributor's guide for more info?")) {
-            window.location = 'https://github.com/AnalyticalGraphicsInc/cesium/wiki/Contributor%27s-Guide';
-        }
-    }
-    </script>
+    <script type="text/javascript" src="../Sandcastle-header.js"></script>
     <script data-dojo-config="async: 1, tlmSiblingOfDojo: 0" src="../../../ThirdParty/dojo-release-1.7.2-src/dojo/dojo.js"></script>
     <script type="text/javascript">
     require({
@@ -25,7 +15,6 @@
             { name: 'dojo', location: 'ThirdParty/dojo-release-1.7.2-src/dojo' },
             { name: 'dijit', location: 'ThirdParty/dojo-release-1.7.2-src/dijit' },
             { name: 'dojox', location: 'ThirdParty/dojo-release-1.7.2-src/dojox' },
-            { name: 'Source', location: 'Source' },
             { name: 'Core', location: 'Source/Core' },
             { name: 'DynamicScene', location: 'Source/DynamicScene' },
             { name: 'Renderer', location: 'Source/Renderer' },
@@ -39,39 +28,38 @@
     <link rel="Stylesheet" href="../../../ThirdParty/dojo-release-1.7.2-src/dijit/themes/claro/claro.css" type="text/css">
     <link rel="Stylesheet" href="../../../Source/Widgets/Dojo/CesiumViewerWidget.css" type="text/css">
 </head>
-<body class="claro">
+<body class="claro" data-sandcastle-bucket="bucket-dojo.html" data-sandcastle-title="Cesium + Dojo">
 <style>
-body {
-    background: #000;
-    color: #eee;
-    font-family: sans-serif;
-    font-size: 9pt;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-.fullSize {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    border: none;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-}
-#toolbar {
-    margin: 5px;
-    padding: 2px 5px;
-    position: absolute;
-}
+    body {
+        background: #000;
+        color: #eee;
+        font-family: sans-serif;
+        font-size: 9pt;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    .fullSize {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: none;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+    #toolbar {
+        margin: 5px;
+        padding: 2px 5px;
+        position: absolute;
+    }
 </style>
 
 <div id="cesiumContainer" class="fullSize"></div>
 <div id="toolbar">Loading...</div>
-
 <script id="cesium_sandcastle_script">
 require([
     'Source/Cesium', 'Widgets/Dojo/CesiumViewerWidget',
@@ -83,12 +71,12 @@ require([
     "use strict";
 
     function addRectangularSensor(sensors, ellipsoid, scene) {
-        Sandcastle.declare(addRectangularSensor);   // For highlighting in Sandcastle.
+        var rectangularPyramidSensor = sensors.addRectangularPyramid();
+        Sandcastle.declare(rectangularPyramidSensor);   // For highlighting in Sandcastle.
         
         var modelMatrix = Cesium.Transforms.northEastDownToFixedFrame(ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-90.0, 0.0)));
         modelMatrix = modelMatrix.multiply(Cesium.Matrix4.fromTranslation(new Cesium.Cartesian3(3000000.0, 0.0, -3000000.0)));
     
-        var rectangularPyramidSensor = sensors.addRectangularPyramid();
         rectangularPyramidSensor.modelMatrix = modelMatrix;
         rectangularPyramidSensor.radius = 20000000.0;
         rectangularPyramidSensor.xHalfAngle = Cesium.Math.toRadians(40.0);
@@ -104,7 +92,8 @@ require([
     }
     
     function addCustomSensor(sensors, ellipsoid, scene) {
-        Sandcastle.declare(addCustomSensor);    // For highlighting in Sandcastle.
+        var customSensor = sensors.addCustom();
+        Sandcastle.declare(customSensor);    // For highlighting in Sandcastle.
 
         var modelMatrix = Cesium.Transforms.northEastDownToFixedFrame(ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-90.0, 0.0)));
         modelMatrix = modelMatrix.multiply(Cesium.Matrix4.fromTranslation(new Cesium.Cartesian3(3000000.0, 0.0, -3000000.0)));
@@ -116,74 +105,9 @@ require([
             });
         }
         
-        var customSensor = sensors.addCustom();
         customSensor.modelMatrix = modelMatrix;
         customSensor.radius = 20000000.0;
         customSensor.setDirections(directions);
-    }
-    
-    function addComplexConicSensor(sensors, ellipsoid, scene) {
-        Sandcastle.declare(addComplexConicSensor);  // For highlighting in Sandcastle.
-
-        // Complex conic sensor - Works with ANGLE turned off.
-        var complexConicSensor = sensors.addComplexConic();
-        var modelMatrix = Cesium.Transforms.northEastDownToFixedFrame(ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-90.0, 0.0)));
-        modelMatrix = modelMatrix.multiply(Cesium.Matrix4.fromTranslation(new Cesium.Cartesian3(3000000.0, 0.0, -3000000.0)));
-        complexConicSensor.modelMatrix = modelMatrix;
-        complexConicSensor.radius = 20000000.0;
-        complexConicSensor.outerHalfAngle = Cesium.Math.toRadians(30.0);
-        complexConicSensor.innerHalfAngle = Cesium.Math.toRadians(20.0);
-
-        // Apply a distance interval material to the conic sensor
-        var distanceMaterial = new Cesium.DistanceIntervalMaterial({
-            intervals : [
-                {
-                    distance : 1500000.0,
-                    color : {
-                        red : 1.0,
-                        green : 0.0,
-                        blue : 0.0,
-                        alpha : 0.5
-                    }
-                }, {
-                    distance : 2500000.0,
-                    color : {
-                        red : 0.0,
-                        green : 1.0,
-                        blue : 0.0,
-                        alpha : 0.5
-                    }
-                }, {
-                    distance : 30000000.0,
-                    color : {
-                        red : 0.0,
-                        green : 0.0,
-                        blue : 1.0,
-                        alpha : 0.5
-                    }
-                }
-            ]
-        });
-        
-        complexConicSensor.outerMaterial = distanceMaterial;
-        complexConicSensor.innerMaterial = distanceMaterial;
-        complexConicSensor.capMaterial = distanceMaterial;
-    }
-    
-    function addComplexConicWithClockAngles(sensors, ellipsoid, scene) {
-        Sandcastle.declare(addComplexConicWithClockAngles); // For highlighting in Sandcastle.
-        
-        // Draw a complex conic sensor with clock angles
-        var modelMatrix = Cesium.Transforms.northEastDownToFixedFrame(ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-90.0, 0.0)));
-        modelMatrix = modelMatrix.multiply(Cesium.Matrix4.fromTranslation(new Cesium.Cartesian3(3000000.0, 0.0, -3000000.0)));
-        
-        var complexConicSensor2 =  sensors.addComplexConic();
-        complexConicSensor2.modelMatrix = modelMatrix;
-        complexConicSensor2.outerHalfAngle = Cesium.Math.toRadians(30.0);
-        complexConicSensor2.innerHalfAngle = Cesium.Math.toRadians(20.0);
-        complexConicSensor2.maximumClockAngle = Cesium.Math.toRadians(45.0);
-        complexConicSensor2.minimumClockAngle = Cesium.Math.toRadians(-45.0);
-        complexConicSensor2.radius = 20000000.0;
     }
     
     function createButtons(widget, sensors) {
@@ -199,7 +123,6 @@ require([
             onClick: function() {
                 sensors.removeAll();
                 addRectangularSensor(sensors, ellipsoid, scene); 
-                Sandcastle.highlight(addRectangularSensor);
             }
         }));
         
@@ -208,30 +131,12 @@ require([
             onClick: function() {
                 sensors.removeAll();
                 addCustomSensor(sensors, ellipsoid, scene); 
-                Sandcastle.highlight(addCustomSensor);
             }
         }));
-       
-        sensorMenu.addChild(new MenuItem({
-            label: 'Complex Conic',
-            onClick: function() {
-                sensors.removeAll();
-                addComplexConicSensor(sensors, ellipsoid, scene); 
-                Sandcastle.highlight(addComplexConicSensor);
-            }
-        }));
-        
-        sensorMenu.addChild(new MenuItem({
-            label: 'Complex Conic with clock angles',
-            onClick: function() {
-                sensors.removeAll();
-                addComplexConicWithClockAngles(sensors, ellipsoid, scene); 
-                Sandcastle.highlight(addComplexConicWithClockAngles);
-            }
-        }));
+
        
         new DropDownButton({
-            label : 'Add a sensor',
+            label : 'Select a sensor',
             dropDown: sensorMenu
         }).placeAt('toolbar');
     }
