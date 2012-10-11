@@ -432,7 +432,10 @@ require({
             cesiumContainer.selectChild(bucketPane);
             // Check for a race condition in some browsers where the iframe hasn't loaded yet.
             if (bucketFrame.contentWindow.location.href.indexOf('bucket.html') > 0) {
+console.log('RELOAD bucketFrame.src=' + bucketFrame.src + ', loc=' + bucketFrame.contentWindow.location.href);
                 bucketFrame.contentWindow.location.reload();
+            } else {
+console.log('DON\'T RELOAD bucketFrame.src=' + bucketFrame.src + ', loc=' + bucketFrame.contentWindow.location.href);
             }
         };
 
@@ -493,6 +496,7 @@ require({
             var loadScript = function () {
                 if (bucketFrame.contentDocument !== bucketDoc) {
                     // A newer reload has happened, abort this.
+console.log('obsolete bucketDoc');
                     return;
                 }
                 if (nodes.length > 0) {
@@ -518,6 +522,7 @@ require({
                         loadScript();
                     }
                 } else {
+console.log('Apply body');
                     // Apply user code to bucket.
                     var bodyEle = bucketDoc.createElement('div');
                     bodyEle.innerHTML = htmlEditor.getValue();
@@ -532,8 +537,10 @@ require({
         }
 
         function applyBucket() {
+console.log('About to apply bucket');
             if (local.emptyBucket && local.bucketName && typeof bucketTypes[local.bucketName] === 'string') {
                 bucketWaiting = false;
+console.log('Apply bucket');
                 var bucketDoc = bucketFrame.contentDocument;
                 if (local.headers.substring(0, local.emptyBucket.length) !== local.emptyBucket) {
                     appendConsole('consoleError', 'Error, first part of ' + local.bucketName + ' must match first part of bucket.html exactly.');
@@ -561,6 +568,7 @@ require({
                     activateBucketScripts(bucketDoc);
                 }
             } else {
+console.log('Wait for bucket instead.');
                 bucketWaiting = true;
             }
         }
@@ -568,6 +576,8 @@ require({
         function applyBucketIfWaiting() {
             if (bucketWaiting) {
                 applyBucket();
+            } else {
+console.log('Not waiting for bucket.');
             }
         }
 
@@ -577,10 +587,12 @@ require({
         }).then(function (value) {
             var pos = value.indexOf('</head>');
             local.emptyBucket = value.substring(0, pos);
+console.log('Empty bucket.html loaded');
             applyBucketIfWaiting();
         });
 
         function loadBucket(bucketName) {
+console.log('loadBucket ' + bucketName);
             if (local.bucketName !== bucketName) {
                 local.bucketName = bucketName;
                 if (typeof bucketTypes[bucketName] !== 'undefined') {
@@ -596,6 +608,9 @@ require({
                         bucketTypes[bucketName] = value.substring(0, pos + 1) + '\n';
                         if (local.bucketName === bucketName) {
                             local.headers = bucketTypes[bucketName];
+console.log('Got contents of ' + bucketName);
+                        } else {
+console.log('Got contents of ' + bucketName + ' but was EXPECTING ' + local.bucketName);
                         }
                         applyBucketIfWaiting();
                     });
@@ -646,8 +661,10 @@ require({
                 var bucketDoc = bucketFrame.contentDocument;
                 if (!local.bucketName) {
                     // Reload fired, bucket not specified yet.
+console.log('reload fired, bucket not specified yet.');
                     return;
                 }
+console.log('reload fired. Dup? ' + bucketDoc.body.getAttribute('data-sandcastle-loaded') + ' - name=' + local.bucketName);
                 if (bucketDoc.body.getAttribute('data-sandcastle-loaded') !== 'yes') {
                     bucketDoc.body.setAttribute('data-sandcastle-loaded', 'yes');
                     logOutput.innerHTML = "";
