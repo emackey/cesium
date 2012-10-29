@@ -485,6 +485,7 @@ console.log('DON\'T RELOAD bucketFrame.src=' + bucketFrame.src + ', loc=' + buck
             for (i = 0; i < len; ++i) {
                 bucketDoc.head.removeChild(nodes[i]);
             }
+console.log('activateBucketScripts for ' + len + ' nodes.');
 
             var onScriptTagError = function () {
                 if (bucketFrame.contentDocument === bucketDoc) {
@@ -515,10 +516,12 @@ console.log('obsolete bucketDoc');
                     }
                     scriptEle.innerHTML = node.innerHTML;
                     if (hasSrc) {
+console.log('Async Activating ' + scriptEle.src);
                         scriptEle.onload = loadScript;
                         scriptEle.onerror = onScriptTagError;
                         bucketDoc.head.appendChild(scriptEle);
                     } else {
+console.log('Recursively activating inline script.');
                         bucketDoc.head.appendChild(scriptEle);
                         loadScript();
                     }
@@ -620,6 +623,7 @@ console.log('Got contents of ' + bucketName + ' but was EXPECTING ' + local.buck
         }
 
         function loadFromGallery(demo) {
+console.log('loadFromGallery: ' + demo.name);
             document.getElementById('saveAsFile').download = demo.name + '.html';
             registry.byId('description').set('value', decodeHTML(demo.description).replace(/\\n/g, '\n'));
             var pos = demo.code.indexOf('<body');
@@ -819,8 +823,10 @@ console.log('reload fired. Dup? ' + bucketDoc.body.getAttribute('data-sandcastle
         var queryObject = {};
         if (window.location.search) {
             queryObject = ioQuery.queryToObject(window.location.search.substring(1));
+console.log('Got query: ' + JSON.stringify(queryObject));
         } else {
             queryObject.src = 'Hello World.html';
+console.log('Set query.src to default value ' + queryObject.src);
         }
 
         function loadDemoFromFile(index) {
