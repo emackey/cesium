@@ -64,10 +64,10 @@
 <div id="toolbar">Loading...</div>
 <script id="cesium_sandcastle_script">
 require([
-    'Source/Cesium', 'Widgets/Dojo/CesiumWidget',
+    'Source/Cesium', 'Widgets/Dojo/CesiumViewerWidget',
     'dojo/on', 'dojo/dom', 'dijit/form/Button'
 ], function(
-    Cesium, CesiumWidget,
+    Cesium, CesiumViewerWidget,
     on, dom, Button)
 {
     "use strict";
@@ -348,7 +348,9 @@ require([
         }).placeAt('toolbar');
     }
 
-    var widget = new CesiumWidget();
+    var widget = new CesiumViewerWidget({
+        canvasPixelSize : 1.4
+    });
     widget.placeAt(dom.byId('cesiumContainer'));
     widget.startup();
     dom.byId('toolbar').innerHTML = '';
