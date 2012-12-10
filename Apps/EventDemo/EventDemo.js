@@ -1,7 +1,7 @@
 /*global require*/
 require([
-    'ScreenSpaceEventHandler',
-    'ScreenSpaceEventType'
+    'Core/ScreenSpaceEventHandler',
+    'Core/ScreenSpaceEventType'
 ], function (
     ScreenSpaceEventHandler,
     ScreenSpaceEventType
@@ -15,6 +15,7 @@ require([
     var lastMouseY = 0;
     var infoLines = 1;
     var idleTimer;
+    var handler;
 
     var mouseTarget = '-480px -160px';
     var targetsList = ['0px 0px', '-160px 0px', '-320px 0px', '-480px 0px', '0px -160px', '-160px -160px', '-320px -160px'];
@@ -26,6 +27,8 @@ require([
         infoDiv.innerHTML = "waiting for events...";
 
         var eventTarget = infoDiv;
+        handler = new ScreenSpaceEventHandler(eventTarget);
+
         eventTarget.oncontextmenu = function() { return false; };
         eventTarget.addEventListener('mousedown', handleMouseDown, false);
         document.addEventListener('mouseup', handleMouseUp, false);
@@ -39,8 +42,7 @@ require([
         eventTarget.addEventListener('mouseout', handleMouseOut, false);
 
         // Touch events seem to work in iOS, Android browser 3.0 and up,
-        // and various 3rd-party Android browsers, now including FireFox
-        // (Nightly as of 03-Feb-2012, not enabled by default yet).
+        // and various 3rd-party Android browsers, including FireFox.
         eventTarget.addEventListener('touchstart', handleTouchStart, false);
         document.addEventListener('touchmove', handleTouchMove, false);
         document.addEventListener('touchend', handleTouchEnd, false);
