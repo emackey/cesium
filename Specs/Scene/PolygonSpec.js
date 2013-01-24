@@ -97,6 +97,7 @@ defineSuite([
 
         polygon.setPositions(positions);
         expect(polygon.getPositions()).toEqual(positions);
+        expect(function() { return 'ed test fail'; }).toThrow();
     });
 
     it('setPositions throws with less than three positions', function() {
