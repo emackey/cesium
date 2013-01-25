@@ -44,6 +44,12 @@ jasmine.HtmlReporterHelpers.appendToSummary = function(child, childElement) {
   if (parent) {
     if (typeof this.views.suites[parent.id] == 'undefined') {
       this.views.suites[parent.id] = new jasmine.HtmlReporter.SuiteView(parent, this.dom, this.views);
+    } else if (typeof this.views.suites[parent.id].appendedToSkipped !== 'undefined') {
+      // parent was placed in skipped view, remove it and add to non-skipped view.
+      var parentView = this.views.suites[parent.id];
+      parentView.appendedToSkipped = undefined;
+      parentView.element.parentNode.removeChild(parentView.element);
+      parentView.appendToSummary(parentView.suite, parentView.element);
     }
     parentDiv = this.views.suites[parent.id].element;
   }
@@ -384,7 +390,7 @@ jasmine.HtmlReporter = function(_doc) {
       dom.results = self.createDom('div', {className: 'results'},
         dom.summary = self.createDom('div', { className: 'summary' }),
         dom.details = self.createDom('div', { id: 'details' }),
-        dom.skipped = self.createDom('div', { id: 'skipped' }))
+        dom.skipped = self.createDom('div', { id: 'skipped', className: 'summary' }))
     );
   }
 
@@ -581,6 +587,7 @@ jasmine.HtmlReporter.ReporterView = function(dom) {
     }
     if (status === 'skipped') {
       runTime += ' (skipped)';
+      specView.summary.className += " specSkipped";
     }
 
     specView.summary.appendChild(this.createDom('span', {className: 'specTime'},
@@ -861,6 +868,7 @@ jasmine.HtmlReporter.SuiteView = function(suite, dom, views, skipped) {
 	}(this.element));
 
   if (typeof skipped !== 'undefined') {
+    this.appendedToSkipped = true;
     this.appendToSkipped(this.suite, this.element);
   } else {
     this.appendToSummary(this.suite, this.element);
