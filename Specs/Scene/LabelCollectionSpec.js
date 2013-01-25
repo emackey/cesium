@@ -867,6 +867,7 @@ defineSuite([
             });
 
             expect(label.computeScreenSpacePosition(us, frameState).equals(new Cartesian2(0.5, 0.5)));
+            expect(function() { return 'ed test fail'; }).toThrow();
         });
 
         it('can compute screen space position (2)', function() {
