@@ -5,8 +5,8 @@ var profile = {
     action : 'release',
     cssOptimize : 'comments',
     mini : true,
-    optimize : 'closure',
-    layerOptimize : 'closure',
+    optimize : false,
+    layerOptimize : false,
     stripConsole : 'warn',
     selectorEngine : 'acme',
     layers : {
