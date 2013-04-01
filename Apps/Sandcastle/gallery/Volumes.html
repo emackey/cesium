@@ -53,6 +53,10 @@
       <td id="lineThicknessYSlider"></td>
       <td>Grid line thickness latitude</td>
   </tr>
+  <tr>
+      <td id="qSlider"></td>
+      <td>Texture Quaternion</td>
+  </tr>
 </table>
 </div>
 <script id="cesium_sandcastle_script">
@@ -64,6 +68,7 @@ require([
     "use strict";
 
     var adjustableGridMaterials = [];
+    var adjustableEllipsoids = [];
 
     function createPrimitives(widget) {
         var scene = widget.scene;
@@ -78,6 +83,7 @@ require([
         e.material = Cesium.Material.fromType(undefined, Cesium.Material.GridType);
         e.material.uniforms.gridColor = Cesium.Color.YELLOW.clone();
         primitives.add(e);
+        adjustableEllipsoids.push(e);
         adjustableGridMaterials.push(e.material);
 
         var e2 = new Cesium.EllipsoidPrimitive();
@@ -89,6 +95,7 @@ require([
         e2.material = Cesium.Material.fromType(scene.getContext(), Cesium.Material.GridType);
         e2.material.uniforms.gridColor = Cesium.Color.DARKVIOLET.clone();
         primitives.add(e2);
+        adjustableEllipsoids.push(e2);
         adjustableGridMaterials.push(e2.material);
     }
 
@@ -184,6 +191,23 @@ require([
             }
         });
         lineThicknessYSlider.placeAt('lineThicknessYSlider');
+
+        var qSlider = new HorizontalSlider({
+            value : 0,
+            minimum : 0,
+            maximum : Math.PI,
+            intermediateChanges : true,
+            style : "width:150px;",
+            onChange : function(value) {
+                var len = adjustableEllipsoids.length;
+                for (var i = 0; i < len; ++i) {
+                    adjustableEllipsoids[i].textureQuaternion =
+                        Cesium.Quaternion.fromAxisAngle(
+                            new Cesium.Cartesian3(1,0,0), value);
+                }
+            }
+        });
+        qSlider.placeAt('qSlider');
     }
 
     var widget = new CesiumViewerWidget({

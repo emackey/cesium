@@ -13,6 +13,7 @@ define([
         '../Core/MeshFilters',
         '../Core/BoundingSphere',
         '../Core/PrimitiveType',
+        '../Core/Quaternion',
         '../Renderer/CullFace',
         '../Renderer/BlendingState',
         '../Renderer/BufferUsage',
@@ -37,6 +38,7 @@ define([
         MeshFilters,
         BoundingSphere,
         PrimitiveType,
+        Quaternion,
         CullFace,
         BlendingState,
         BufferUsage,
@@ -125,6 +127,13 @@ define([
         this.maxRepeatTexture = 25;
 
         /**
+         * Orient the texture on the Ellipsoid using a quaternion.
+         *
+         * @type Quaternion
+         */
+        this.textureQuaternion = new Quaternion(0, 0, 0, 1);
+
+        /**
          * The 4x4 transformation matrix that transforms the ellipsoid from model to world coordinates.
          * When this is the identity matrix, the ellipsoid is drawn in world coordinates, i.e., Earth's WGS84 coordinates.
          * Local reference frames can be used by providing a different transformation matrix, like that returned
@@ -200,6 +209,9 @@ define([
             },
             u_maxRepeatTexture : function() {
                 return that.maxRepeatTexture;
+            },
+            u_textureQuaternion : function() {
+                return that.textureQuaternion;
             }
         };
     };

@@ -6,6 +6,8 @@ define([
         '../Core/Color',
         '../Core/Matrix3',
         '../Core/Matrix4',
+        '../Core/Cartesian3',
+        '../Core/Quaternion',
         '../Scene/EllipsoidPrimitive',
         '../Scene/Material'
        ], function(
@@ -15,6 +17,8 @@ define([
          Color,
          Matrix3,
          Matrix4,
+         Cartesian3,
+         Quaternion,
          EllipsoidPrimitive,
          Material) {
     "use strict";
@@ -231,7 +235,20 @@ define([
             dynamicObject._ellipsoidVisualizerIndex = ellipsoidVisualizerIndex;
             ellipsoid.dynamicObject = dynamicObject;
 
-            ellipsoid.material = Material.fromType(context, Material.ColorType);
+            ellipsoid.material = Material.fromType(this._scene.getContext(), Material.GridType);
+            ellipsoid.material.uniforms.gridColor = Color.YELLOW.clone();
+
+            ellipsoid.material.uniforms.lineThickness.x = 1.1;
+            ellipsoid.material.uniforms.lineThickness.y = 1.1;
+
+            //ellipsoid.material.uniforms.lineCount.y = 25;
+            //ellipsoid.material.uniforms.lineCount.x = 25;
+
+            ellipsoid.material.uniforms.holeAlpha = 0.1;
+
+            //ellipsoid.material = Material.fromType(context, Material.ColorType);
+
+            ellipsoid.textureQuaternion = Quaternion.fromAxisAngle(new Cartesian3(0,1,0), Math.PI * 0.5);
         } else {
             ellipsoid = this._ellipsoidCollection[ellipsoidVisualizerIndex];
         }
@@ -252,9 +269,9 @@ define([
             ellipsoid._visualizerOrientation = orientation.clone(ellipsoid._visualizerOrientation);
         }
 
-        var material = dynamicEllipsoid.material;
+        //var material = dynamicEllipsoid.material;
         if (typeof material !== 'undefined') {
-            ellipsoid.material = material.getValue(time, context, ellipsoid.material);
+//            ellipsoid.material = material.getValue(time, context, ellipsoid.material);
         }
     };
 
