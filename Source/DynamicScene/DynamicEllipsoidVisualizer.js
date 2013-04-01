@@ -231,7 +231,16 @@ define([
             dynamicObject._ellipsoidVisualizerIndex = ellipsoidVisualizerIndex;
             ellipsoid.dynamicObject = dynamicObject;
 
-            ellipsoid.material = Material.fromType(context, Material.ColorType);
+            //ellipsoid.material = Material.fromType(context, Material.ColorType);
+            ellipsoid.material = Material.fromType(this._scene.getContext(), Material.GridType);
+
+            ellipsoid.material.uniforms.lineThickness.x = 1.1;
+            ellipsoid.material.uniforms.lineThickness.y = 1.1;
+
+            //ellipsoid.material.uniforms.lineCount.y = 25;
+            //ellipsoid.material.uniforms.lineCount.x = 25;
+
+            ellipsoid.material.uniforms.holeAlpha = 0.1;
         } else {
             ellipsoid = this._ellipsoidCollection[ellipsoidVisualizerIndex];
         }
@@ -254,7 +263,10 @@ define([
 
         var material = dynamicEllipsoid.material;
         if (typeof material !== 'undefined') {
-            ellipsoid.material = material.getValue(time, context, ellipsoid.material);
+            ellipsoid.solidMaterial = material.getValue(time, context, ellipsoid.solidMaterial);
+            ellipsoid.material.uniforms.gridColor.red = ellipsoid.solidMaterial.uniforms.color.red;
+            ellipsoid.material.uniforms.gridColor.green = ellipsoid.solidMaterial.uniforms.color.green;
+            ellipsoid.material.uniforms.gridColor.blue = ellipsoid.solidMaterial.uniforms.color.blue;
         }
     };
 
