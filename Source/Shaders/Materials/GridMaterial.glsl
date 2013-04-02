@@ -36,15 +36,16 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
         smoothstep(dF.s * thickness.s, dF.s * (fuzz + thickness.s), scaledWidth),
         smoothstep(dF.t * thickness.t, dF.t * (fuzz + thickness.t), scaledHeight));
 
-    // Add more grid lines if space allows
+    // Add more grid lines
     float density = 1.0;
-    for (float i = 0.0; i < 5.0; i += 1.0) {
-        float nextValue = max(
-            smoothstep(dF.s * minPixelsBeforeMoreLines, dF.s * (8.0 * minPixelsBeforeMoreLines), scaledWidth),
-            smoothstep(dF.t * minPixelsBeforeMoreLines, dF.t * (8.0 * minPixelsBeforeMoreLines), scaledHeight));
-        if (nextValue > czm_epsilon5) {
+    for (float i = 0.0; i < 2.0; i += 1.0) {
+        //float nextValue = max(
+        //    smoothstep(dF.s * minPixelsBeforeMoreLines, dF.s * (8.0 * minPixelsBeforeMoreLines), scaledWidth),
+        //    smoothstep(dF.t * minPixelsBeforeMoreLines, dF.t * (8.0 * minPixelsBeforeMoreLines), scaledHeight));
+        //if (nextValue > czm_epsilon5) {
             density *= 2.0;
             dF *= 2.0;
+            thickness *= 0.5;
             scaledWidth = fract(lineCount.s * st.s * density);
             scaledWidth = abs(scaledWidth - floor(scaledWidth + 0.5));
             scaledHeight = fract(lineCount.t * st.t * density);
@@ -52,8 +53,8 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
             float newValue = min(
                 smoothstep(dF.s * thickness.s, dF.s * (fuzz + thickness.s), scaledWidth),
                 smoothstep(dF.t * thickness.t, dF.t * (fuzz + thickness.t), scaledHeight));
-            value *= 1.0 - (1.0 - newValue) * nextValue;
-        }
+            value *= 1.0 - (1.0 - newValue) / density;
+        //}
     }
 #else
     // Fuzz Factor - Controls blurriness between lines and holes
