@@ -22,6 +22,10 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
 #ifdef GL_OES_standard_derivatives
     // Fuzz Factor - Controls blurriness between lines and holes
     const float fuzz = 1.2;
+
+    // Add more lines factor, in pixels
+    const float minPixelsBeforeMoreLines = 15.0;
+
     vec2 thickness = lineThickness - 1.0;
 
     // From "3D Engine Design for Virtual Globes" by Cozzi and Ring, Listing 4.13.
@@ -31,6 +35,26 @@ czm_material czm_getMaterial(czm_materialInput materialInput)
     value = min(
         smoothstep(dF.s * thickness.s, dF.s * (fuzz + thickness.s), scaledWidth),
         smoothstep(dF.t * thickness.t, dF.t * (fuzz + thickness.t), scaledHeight));
+
+    // Add more grid lines if space allows
+    float density = 1.0;
+    for (float i = 0.0; i < 5.0; i += 1.0) {
+        float nextValue = max(
+            smoothstep(dF.s * minPixelsBeforeMoreLines, dF.s * (8.0 * minPixelsBeforeMoreLines), scaledWidth),
+            smoothstep(dF.t * minPixelsBeforeMoreLines, dF.t * (8.0 * minPixelsBeforeMoreLines), scaledHeight));
+        if (nextValue > czm_epsilon5) {
+            density *= 2.0;
+            dF *= 2.0;
+            scaledWidth = fract(lineCount.s * st.s * density);
+            scaledWidth = abs(scaledWidth - floor(scaledWidth + 0.5));
+            scaledHeight = fract(lineCount.t * st.t * density);
+            scaledHeight = abs(scaledHeight - floor(scaledHeight + 0.5));
+            float newValue = min(
+                smoothstep(dF.s * thickness.s, dF.s * (fuzz + thickness.s), scaledWidth),
+                smoothstep(dF.t * thickness.t, dF.t * (fuzz + thickness.t), scaledHeight));
+            value *= 1.0 - (1.0 - newValue) * nextValue;
+        }
+    }
 #else
     // Fuzz Factor - Controls blurriness between lines and holes
     const float fuzz = 0.05;
