@@ -234,13 +234,13 @@ define([
             //ellipsoid.material = Material.fromType(context, Material.ColorType);
             ellipsoid.material = Material.fromType(this._scene.getContext(), Material.GridType);
 
-            ellipsoid.material.uniforms.lineThickness.x = 1.1;
-            ellipsoid.material.uniforms.lineThickness.y = 1.1;
+            //ellipsoid.material.uniforms.lineThickness.x = 1.0;
+            //ellipsoid.material.uniforms.lineThickness.y = 1.0;
 
-            //ellipsoid.material.uniforms.lineCount.y = 25;
-            //ellipsoid.material.uniforms.lineCount.x = 25;
+            ellipsoid.material.uniforms.lineCount.y = 16;
+            ellipsoid.material.uniforms.lineCount.x = 16;
 
-            ellipsoid.material.uniforms.holeAlpha = 0.1;
+            //ellipsoid.material.uniforms.cellAlpha = 0.1;
         } else {
             ellipsoid = this._ellipsoidCollection[ellipsoidVisualizerIndex];
         }
