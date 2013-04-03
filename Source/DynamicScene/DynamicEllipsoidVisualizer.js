@@ -264,9 +264,9 @@ define([
         var material = dynamicEllipsoid.material;
         if (typeof material !== 'undefined') {
             ellipsoid.solidMaterial = material.getValue(time, context, ellipsoid.solidMaterial);
-            ellipsoid.material.uniforms.gridColor.red = ellipsoid.solidMaterial.uniforms.color.red;
-            ellipsoid.material.uniforms.gridColor.green = ellipsoid.solidMaterial.uniforms.color.green;
-            ellipsoid.material.uniforms.gridColor.blue = ellipsoid.solidMaterial.uniforms.color.blue;
+            ellipsoid.material.uniforms.color.red = ellipsoid.solidMaterial.uniforms.color.red;
+            ellipsoid.material.uniforms.color.green = ellipsoid.solidMaterial.uniforms.color.green;
+            ellipsoid.material.uniforms.color.blue = ellipsoid.solidMaterial.uniforms.color.blue;
         }
     };
 
