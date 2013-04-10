@@ -27,14 +27,43 @@
 </style>
 <div id="cesiumContainer" class="fullSize"></div>
 <div id="loadingOverlay"><h1>Loading...</h1></div>
-<div id="toolbar"></div>
+<div id="toolbar">
+<table>
+  <tr>
+      <td id="ellipsoidAlphaSlider"></td>
+      <td>Ellipsoid alpha</td>
+  </tr>
+  <tr>
+      <td id="holeAlphaSlider"></td>
+      <td>Grid hole alpha</td>
+  </tr>
+  <tr>
+      <td id="lineCountXSlider"></td>
+      <td>Grid line count longitude</td>
+  </tr>
+  <tr>
+      <td id="lineCountYSlider"></td>
+      <td>Grid line count latitude</td>
+  </tr>
+  <tr>
+      <td id="lineThicknessXSlider"></td>
+      <td>Grid line thickness longitude</td>
+  </tr>
+  <tr>
+      <td id="lineThicknessYSlider"></td>
+      <td>Grid line thickness latitude</td>
+  </tr>
+</table>
+</div>
 <script id="cesium_sandcastle_script">
 require([
-    'Cesium', 'Widgets/Dojo/CesiumViewerWidget'
+    'Cesium', 'Widgets/Dojo/CesiumViewerWidget', 'dijit/form/HorizontalSlider'
 ], function(
-    Cesium, CesiumViewerWidget)
+    Cesium, CesiumViewerWidget, HorizontalSlider)
 {
     "use strict";
+
+    var adjustableGridMaterials = [];
 
     function createPrimitives(widget) {
         var scene = widget.scene;
@@ -46,29 +75,128 @@ require([
         e.center = ellipsoid.cartographicToCartesian(
             Cesium.Cartographic.fromDegrees(-75.0, 40.0, 500000.0));
         e.radii = new Cesium.Cartesian3(500000.0, 500000.0, 500000.0);
-        e.material = Cesium.Material.fromType(undefined, Cesium.Material.RimLightingType);
+        e.material = Cesium.Material.fromType(undefined, Cesium.Material.GridType);
+        e.material.uniforms.color = Cesium.Color.YELLOW.clone();
         primitives.add(e);
+        adjustableGridMaterials.push(e.material);
 
         var e2 = new Cesium.EllipsoidPrimitive();
         Sandcastle.declare(e2); // For Sandcastle highlighting.
         e2.modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
             ellipsoid.cartographicToCartesian(
               Cesium.Cartographic.fromDegrees(-95.0, 40.0, 500000.0)));
-        e2.radii = new Cesium.Cartesian3(300000.0, 300000.0, 500000.0);
-        e2.material = Cesium.Material.fromType(scene.getContext(), Cesium.Material.StripeType);
+        e2.radii = new Cesium.Cartesian3(200000.0, 300000.0, 500000.0);
+        e2.material = Cesium.Material.fromType(scene.getContext(), Cesium.Material.GridType);
+        e2.material.uniforms.color = Cesium.Color.DARKVIOLET.clone();
         primitives.add(e2);
+        adjustableGridMaterials.push(e2.material);
+    }
+
+    function createAdjustmentUserInterface() {
+        var ellipsoidAlphaSlider = new HorizontalSlider({
+            value : adjustableGridMaterials[0].uniforms.color.alpha,
+            minimum : 0.0,
+            maximum : 1.0,
+            intermediateChanges : true,
+            style : "width:150px;",
+            onChange : function(value) {
+                var len = adjustableGridMaterials.length;
+                for (var i = 0; i < len; ++i) {
+                    adjustableGridMaterials[i].uniforms.color.alpha = value;
+                }
+            }
+        });
+        ellipsoidAlphaSlider.placeAt('ellipsoidAlphaSlider');
+
+        var holeAlphaSlider = new HorizontalSlider({
+            value : adjustableGridMaterials[0].uniforms.cellAlpha,
+            minimum : 0.0,
+            maximum : 1.0,
+            intermediateChanges : true,
+            style : "width:150px;",
+            onChange : function(value) {
+                var len = adjustableGridMaterials.length;
+                for (var i = 0; i < len; ++i) {
+                    adjustableGridMaterials[i].uniforms.cellAlpha = value;
+                }
+            }
+        });
+        holeAlphaSlider.placeAt('holeAlphaSlider');
+
+        var lineCountXSlider = new HorizontalSlider({
+            value : adjustableGridMaterials[0].uniforms.lineCount.x,
+            minimum : 1,
+            maximum : 20,
+            discreteValues: 20,
+            intermediateChanges : true,
+            style : "width:150px;",
+            onChange : function(value) {
+                var len = adjustableGridMaterials.length;
+                for (var i = 0; i < len; ++i) {
+                    adjustableGridMaterials[i].uniforms.lineCount.x = value;
+                }
+            }
+        });
+        lineCountXSlider.placeAt('lineCountXSlider');
+
+        var lineCountYSlider = new HorizontalSlider({
+            value : adjustableGridMaterials[0].uniforms.lineCount.y,
+            minimum : 1,
+            maximum : 20,
+            discreteValues: 20,
+            intermediateChanges : true,
+            style : "width:150px;",
+            onChange : function(value) {
+                var len = adjustableGridMaterials.length;
+                for (var i = 0; i < len; ++i) {
+                    adjustableGridMaterials[i].uniforms.lineCount.y = value;
+                }
+            }
+        });
+        lineCountYSlider.placeAt('lineCountYSlider');
+
+        var lineThicknessXSlider = new HorizontalSlider({
+            value : adjustableGridMaterials[0].uniforms.lineThickness.x,
+            minimum : 0.5,
+            maximum : 10.0,
+            intermediateChanges : true,
+            style : "width:150px;",
+            onChange : function(value) {
+                var len = adjustableGridMaterials.length;
+                for (var i = 0; i < len; ++i) {
+                    adjustableGridMaterials[i].uniforms.lineThickness.x = value;
+                }
+            }
+        });
+        lineThicknessXSlider.placeAt('lineThicknessXSlider');
+
+        var lineThicknessYSlider = new HorizontalSlider({
+            value : adjustableGridMaterials[0].uniforms.lineThickness.y,
+            minimum : 0.5,
+            maximum : 10.0,
+            intermediateChanges : true,
+            style : "width:150px;",
+            onChange : function(value) {
+                var len = adjustableGridMaterials.length;
+                for (var i = 0; i < len; ++i) {
+                    adjustableGridMaterials[i].uniforms.lineThickness.y = value;
+                }
+            }
+        });
+        lineThicknessYSlider.placeAt('lineThicknessYSlider');
     }
 
     var widget = new CesiumViewerWidget({
         onObjectMousedOver : function(mousedOverObject) {
-            widget.highlightObject(mousedOverObject);
-            Sandcastle.highlight(mousedOverObject);
+            //widget.highlightObject(mousedOverObject);
+            //Sandcastle.highlight(mousedOverObject);
         }
     });
     widget.placeAt('cesiumContainer');
     widget.startup();
 
     createPrimitives(widget);
+    createAdjustmentUserInterface();
 
     Sandcastle.finishedLoading();
 });
