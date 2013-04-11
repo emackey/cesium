@@ -38,11 +38,11 @@ define([
      * @example
      * // Create a clock that loops on Christmas day 2013 and runs in real-time.
      * var clock = new Clock({
-     *    startTime : JulianDate.fromIso8601("12-25-2013"),
-     *    currentTime : JulianDate.fromIso8601("12-25-2013"),
-     *    stopTime : JulianDate.fromIso8601("12-26-2013"),
+     *    startTime : JulianDate.fromIso8601("2013-12-25"),
+     *    currentTime : JulianDate.fromIso8601("2013-12-25"),
+     *    stopTime : JulianDate.fromIso8601("2013-12-26"),
      *    clockRange : ClockRange.LOOP_STOP,
-     *    clockStep : SYSTEM_CLOCK_MULTIPLIER
+     *    clockStep : ClockStep.SYSTEM_CLOCK_MULTIPLIER
      * });
      */
     var Clock = function(description) {

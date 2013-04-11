@@ -1,7 +1,9 @@
 require([
-    'Cesium', 'Widgets/Dojo/CesiumViewerWidget'
+    'Cesium',
+    'Widgets/Dojo/CesiumViewerWidget',
+    'Core/JulianDate'
 ], function(
-    Cesium, CesiumViewerWidget)
+    Cesium, CesiumViewerWidget, JulianDate)
 {
     "use strict";
 
@@ -58,8 +60,20 @@ require([
             widget.highlightObject(mousedOverObject);
         }
     });
+
     widget.placeAt('cesiumContainer');
     widget.startup();
+
+    var clockViewModel = widget.clockViewModel;
+
+    clockViewModel.startTime(JulianDate.fromIso8601("1800-01-02"));
+    clockViewModel.currentTime(JulianDate.fromIso8601("1800-01-02"));
+    clockViewModel.stopTime(JulianDate.fromIso8601("2009-01-02"));
+    clockViewModel.clockRange(Cesium.ClockRange.LOOP_STOP);
+    clockViewModel.clockStep(Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER);
+
+
+    widget.timeline.zoomTo(widget.clock.startTime, widget.clock.stopTime);
 
     createPrimitives(widget);
 });
