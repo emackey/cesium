@@ -1,3 +1,5 @@
+/*global require*/
+
 require([
     'Cesium',
     'Widgets/Dojo/CesiumViewerWidget',
@@ -58,7 +60,8 @@ require([
     var widget = new CesiumViewerWidget({
         onObjectMousedOver : function(mousedOverObject) {
             widget.highlightObject(mousedOverObject);
-        }
+        },
+        showSkyBox : false
     });
 
     widget.placeAt('cesiumContainer');
@@ -71,6 +74,26 @@ require([
     clockViewModel.stopTime(JulianDate.fromIso8601("2009-01-02"));
     clockViewModel.clockRange(Cesium.ClockRange.LOOP_STOP);
     clockViewModel.clockStep(Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER);
+
+    var yearPerSec = 86400*365;
+    clockViewModel.multiplier(yearPerSec);
+
+    widget.animationViewModel.setShuttleRingTicks([yearPerSec, yearPerSec*2, yearPerSec*5, yearPerSec*10]);
+    widget.animationViewModel.setDateFormatter(function(date, viewModel) {
+        var gregorianDate = date.toGregorianDate();
+        return 'Year: ' + gregorianDate.year;
+    });
+
+    var year = 1800;
+
+    widget.clock.onTick.addEventListener(function(){
+        var gregorianDate = widget.clock.currentTime.toGregorianDate();
+        var currentYear = gregorianDate.year + gregorianDate.month/12;// + gregorianDate.day/31;
+        if (currentYear !== year && typeof window.displayYear !== 'undefined'){
+            window.displayYear(currentYear);
+            year = currentYear;
+        }
+    });
 
 
     widget.timeline.zoomTo(widget.clock.startTime, widget.clock.stopTime);
