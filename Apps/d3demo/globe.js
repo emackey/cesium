@@ -112,7 +112,11 @@ require([
 
 
     sharedObject.flyTo = function(d) {
-        var destination = Cesium.Cartographic.fromDegrees(d.lon, d.lat, 15000000.0);
+        var destination = Cesium.Cartographic.fromDegrees(d.lon, d.lat-20.0, 10000000.0);
+        var lookAt = widget.centralBody.getEllipsoid().cartographicToCartesian(
+                                Cesium.Cartographic.fromDegrees(d.lon, d.lat, 0.0));
+        var direction = lookAt.subtract(widget.centralBody.getEllipsoid().cartographicToCartesian(destination)).normalize();
+        var up = direction.cross(lookAt).cross(direction).normalize();
 
         // only fly there if it is not the camera's current position
         if (!widget.centralBody.getEllipsoid()
@@ -120,7 +124,9 @@ require([
                    .equalsEpsilon(widget.scene.getCamera().getPositionWC(), Cesium.Math.EPSILON6)) {
 
             var flight = Cesium.CameraFlightPath.createAnimationCartographic(widget.scene.getFrameState(), {
-                destination : destination
+                destination : destination,
+                direction : direction,
+                up : up
             });
             widget.scene.getAnimations().add(flight);
         }
