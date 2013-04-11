@@ -112,7 +112,10 @@
           .attr("class", "dot")
           .style("fill", function(d) { return colorScale(color(d)); })
           .call(position)
-          .sort(order);
+          .sort(order)
+          .on("click", function(d){
+              sharedObject.flyTo(d);
+          });
 
       // Add a title.
       dot.append("title")

@@ -110,4 +110,20 @@ require([
 
     widget.timeline.zoomTo(widget.clock.startTime, widget.clock.stopTime);
 
+
+    sharedObject.flyTo = function(d) {
+        var destination = Cesium.Cartographic.fromDegrees(d.lon, d.lat, 15000000.0);
+
+        // only fly there if it is not the camera's current position
+        if (!widget.centralBody.getEllipsoid()
+                   .cartographicToCartesian(destination)
+                   .equalsEpsilon(widget.scene.getCamera().getPositionWC(), Cesium.Math.EPSILON6)) {
+
+            var flight = Cesium.CameraFlightPath.createAnimationCartographic(widget.scene.getFrameState(), {
+                destination : destination
+            });
+            widget.scene.getAnimations().add(flight);
+        }
+    };
+
 });
