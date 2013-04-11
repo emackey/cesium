@@ -457,7 +457,8 @@ define([
         }
 
         var pass = frameState.passes;
-        var useDepthTest = (this.morphTime !== 0.0);
+        //var useDepthTest = (this.morphTime !== 0.0);
+        var useDepthTest = true;
         var commandLists = this._commandLists;
         commandLists.colorList = emptyArray;
         commandLists.pickList = emptyArray;
@@ -469,7 +470,7 @@ define([
                 });
             }
 
-            this._rs.depthMask = !useDepthTest;
+            //this._rs.depthMask = !useDepthTest;
             this._rs.depthTest.enabled = useDepthTest;
 
             var colorList = this._colorCommands;
@@ -488,7 +489,7 @@ define([
                 this._rsPick = context.createRenderState();
             }
 
-            this._rsPick.depthMask = !useDepthTest;
+            //this._rsPick.depthMask = !useDepthTest;
             this._rsPick.depthTest.enabled = useDepthTest;
 
             var pickList = this._pickCommands;

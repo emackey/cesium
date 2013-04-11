@@ -33,7 +33,12 @@ require([
             ]));
             // TODO: use d3.scale to scale the width of the line based on a data parameter
             widePolyline.setWidth(10.0);
-            widePolyline.getMaterial().uniforms.color = Cesium.Color.fromCssColorString(colorScale(nation.region));
+
+            var outlineMaterial = Cesium.Material.fromType(undefined, Cesium.Material.PolylineOutlineType);
+            outlineMaterial.uniforms.outlineWidth = 1.0;
+            outlineMaterial.uniforms.outlineColor = new Cesium.Color(0.0, 0.0, 0.0, 1.0);
+            outlineMaterial.uniforms.color = Cesium.Color.fromCssColorString(colorScale(nation.region));
+            widePolyline.setMaterial(outlineMaterial);
 
             polylines.push(widePolyline);
         }
@@ -46,8 +51,8 @@ require([
     function updateLineData() {
         var ellipsoid = widget.centralBody.getEllipsoid();
         var xScale = d3.scale.log().domain([300, 1e5]).range([0, 10000000.0]);
-        //var yScale = d3.scale.linear().domain([10, 85]).range([0, 30]);
-        var widthScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]);
+        //var yScale = d3.scale.linear().domain([10, 85]).range([2, 5]);
+        var widthScale = d3.scale.sqrt().domain([0, 5e8]).range([5, 30]);
 
         for (var i=0; i<polylines.length; i++) {
             var nation = sharedObject.yearData[i];
@@ -59,6 +64,7 @@ require([
                            ]));
             polyline.setWidth(widthScale(nation.population));
 
+            //polyline.getMaterial().uniforms.outlineWidth = yScale(nation.lifeExpectancy);
         }
 
     }
