@@ -1,4 +1,4 @@
-/*global require*/
+/*global require, sharedObject, d3*/
 
 require([
     'Cesium',
@@ -9,53 +9,60 @@ require([
 {
     "use strict";
 
-    function createPrimitives(widget) {
-        var scene = widget.scene;
+    var polylines = [];
+
+    // Load the data.
+    d3.json("nations_geo.json", function(nations) {
+
+        var colorScale = d3.scale.category20c();
+
+
         var ellipsoid = widget.centralBody.getEllipsoid();
-        var primitives = scene.getPrimitives();
-        var polylines = new Cesium.PolylineCollection();
+        var primitives = widget.scene.getPrimitives();
+        var polylineCollection = new Cesium.PolylineCollection();
 
-        // Fill circle
-        var circle = new Cesium.Polygon();
-        circle.setPositions(
-                Cesium.Shapes.computeCircleBoundary(
-                        ellipsoid,
-                        ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-75.0, 40.0)),
-                        300000.0));
-        primitives.add(circle);
+        for (var i=0; i<nations.length; i++){
+            // Set a polyline's width
+            var nation = nations[i];
 
-        // Outline circle
-        var outline = polylines.add();
-        outline.setPositions(
-                Cesium.Shapes.computeCircleBoundary(
-                        ellipsoid,
-                        ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-82.0, 37.0)),
-                        300000.0));
-        primitives.add(polylines);
+            var widePolyline = polylineCollection.add();
+            widePolyline.setPositions(ellipsoid.cartographicArrayToCartesianArray([
+                Cesium.Cartographic.fromDegrees(nation.lon, nation.lat, 0.0),
+                // TODO: use d3.scale to scale the height of the line based on a data parameter
+                Cesium.Cartographic.fromDegrees(nation.lon, nation.lat, 1000000.0)
+            ]));
+            // TODO: use d3.scale to scale the width of the line based on a data parameter
+            widePolyline.setWidth(10.0);
+            widePolyline.getMaterial().uniforms.color = Cesium.Color.fromCssColorString(colorScale(nation.region));
 
-        // Apply a material to a filled circle
-        var circle2 = new Cesium.Polygon();
-        circle2.setPositions(
-                Cesium.Shapes.computeCircleBoundary(
-                        ellipsoid,
-                        ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-90.0, 35.0)),
-                        400000.0));
+            polylines.push(widePolyline);
+        }
 
-        // Any polygon-compatible material can be used
-        circle2.material = Cesium.Material.fromType(scene.getContext(), Cesium.Material.TyeDyeType);
-        primitives.add(circle2);
+        primitives.add(polylineCollection);
 
-        // Fill an ellipse
-        var ellipse = new Cesium.Polygon();
-        ellipse.setPositions(
-                Cesium.Shapes.computeEllipseBoundary(
-                        ellipsoid,
-                        ellipsoid.cartographicToCartesian(Cesium.Cartographic.fromDegrees(-78.0, 32.5)),
-                        500000.0,
-                        250000.0,
-                        Cesium.Math.toRadians(60)));
-        primitives.add(ellipse);
+
+    });
+
+    function updateLineData() {
+        var ellipsoid = widget.centralBody.getEllipsoid();
+        var xScale = d3.scale.log().domain([300, 1e5]).range([0, 10000000.0]);
+        //var yScale = d3.scale.linear().domain([10, 85]).range([0, 30]);
+        var widthScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]);
+
+        for (var i=0; i<polylines.length; i++) {
+            var nation = sharedObject.yearData[i];
+            var polyline = polylines[i];
+
+            polyline.setPositions(ellipsoid.cartographicArrayToCartesianArray([
+                           Cesium.Cartographic.fromDegrees(nation.lon, nation.lat, 0.0),
+                           Cesium.Cartographic.fromDegrees(nation.lon, nation.lat, xScale(nation.income))
+                           ]));
+            polyline.setWidth(widthScale(nation.population));
+
+        }
+
     }
+
 
     var widget = new CesiumViewerWidget({
         onObjectMousedOver : function(mousedOverObject) {
@@ -67,6 +74,9 @@ require([
     widget.placeAt('cesiumContainer');
     widget.startup();
 
+    var providerViewModels = widget.baseLayerPicker.viewModel.imageryProviderViewModels;
+    widget.baseLayerPicker.viewModel.selectedItem(providerViewModels()[8]);
+
     var clockViewModel = widget.clockViewModel;
 
     clockViewModel.startTime(JulianDate.fromIso8601("1800-01-02"));
@@ -76,9 +86,9 @@ require([
     clockViewModel.clockStep(Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER);
 
     var yearPerSec = 86400*365;
-    clockViewModel.multiplier(yearPerSec);
+    clockViewModel.multiplier(yearPerSec * 5);
 
-    widget.animationViewModel.setShuttleRingTicks([yearPerSec, yearPerSec*2, yearPerSec*5, yearPerSec*10]);
+    widget.animationViewModel.setShuttleRingTicks([yearPerSec, yearPerSec*5, yearPerSec*10, yearPerSec*50]);
     widget.animationViewModel.setDateFormatter(function(date, viewModel) {
         var gregorianDate = date.toGregorianDate();
         return 'Year: ' + gregorianDate.year;
@@ -92,11 +102,12 @@ require([
         if (currentYear !== year && typeof window.displayYear !== 'undefined'){
             window.displayYear(currentYear);
             year = currentYear;
+
+            updateLineData();
         }
     });
 
 
     widget.timeline.zoomTo(widget.clock.startTime, widget.clock.stopTime);
 
-    createPrimitives(widget);
 });

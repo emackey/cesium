@@ -16,6 +16,12 @@
             { name: 'dojox', location: '../ThirdParty/dojo-release-1.8.3-src/dojox' }
         ]
     };
+    
+    var sharedObject = {
+    	dispatch : d3.dispatch("onNationsLoaded"),
+    	yearData : []
+    };
+    
     </script>
     <script data-dojo-config="async: 1, tlmSiblingOfDojo: 0" src="../../ThirdParty/dojo-release-1.8.3-src/dojo/dojo.js"></script>
     <link rel="stylesheet" href="../../ThirdParty/dojo-release-1.8.3-src/dijit/themes/claro/claro.css" type="text/css">
@@ -63,7 +69,7 @@ body {
 <div id="cesiumContainer" class="fullSize"></div>
 <div id="chart"></div>
 
-<script src='d3example.js'></script>
 <script src='globe.js'></script>
+<script src='d3example.js'></script>
 </body>
 </html>

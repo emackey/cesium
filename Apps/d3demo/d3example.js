@@ -1,4 +1,4 @@
-/*global d3 */
+/*global d3, sharedObject */
 (function () {
     "use strict";
 
@@ -18,7 +18,7 @@
     var xScale = d3.scale.log().domain([300, 1e5]).range([0, width]),
         yScale = d3.scale.linear().domain([10, 85]).range([height, 0]),
         radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
-        colorScale = d3.scale.category10();
+        colorScale = d3.scale.category20c();
 
     // The x & y axes.
     var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(12, d3.format(",d")),
@@ -70,6 +70,8 @@
     // Load the data.
     d3.json("nations_geo.json", function(nations) {
 
+      sharedObject.dispatch.onNationsLoaded(nations);
+
       // A bisector since many nation's data is sparsely-defined.
       var bisect = d3.bisector(function(d) { return d[0]; });
 
@@ -86,15 +88,19 @@
       }
       // Interpolates the dataset for the given (fractional) year.
       function interpolateData(year) {
-        return nations.map(function(d) {
+        sharedObject.yearData = nations.map(function(d) {
           return {
             name: d.name,
             region: d.region,
             income: interpolateValues(d.income, year),
             population: interpolateValues(d.population, year),
-            lifeExpectancy: interpolateValues(d.lifeExpectancy, year)
+            lifeExpectancy: interpolateValues(d.lifeExpectancy, year),
+            lat: d.lat,
+            lon: d.lon
           };
         });
+
+        return sharedObject.yearData;
       }
 
       // Add a dot per nation. Initialize the data at 1800, and set the colors.
