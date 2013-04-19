@@ -1,6 +1,7 @@
 /*global define*/
 define([
         '../Core/DeveloperError',
+        '../Core/Color',
         '../Core/combine',
         '../Core/destroyObject',
         '../Core/Cartesian3',
@@ -16,15 +17,15 @@ define([
         '../Renderer/BufferUsage',
         '../Renderer/CommandLists',
         '../Renderer/DrawCommand',
+        '../Renderer/createPickFragmentShaderSource',
         './Material',
         './SceneMode',
         './Polyline',
-        '../Shaders/Noise',
         '../Shaders/PolylineVS',
-        '../Shaders/PolylineFS',
-        '../Shaders/PolylineFSPick'
+        '../Shaders/PolylineFS'
     ], function(
         DeveloperError,
+        Color,
         combine,
         destroyObject,
         Cartesian3,
@@ -40,13 +41,12 @@ define([
         BufferUsage,
         CommandLists,
         DrawCommand,
+        createPickFragmentShaderSource,
         Material,
         SceneMode,
         Polyline,
-        Noise,
         PolylineVS,
-        PolylineFS,
-        PolylineFSPick) {
+        PolylineFS) {
     "use strict";
 
     var SHOW_INDEX = Polyline.SHOW_INDEX;
@@ -146,8 +146,6 @@ define([
         this.modelMatrix = Matrix4.IDENTITY.clone();
         this._modelMatrix = Matrix4.IDENTITY.clone();
         this._rs = undefined;
-        this._spPick = undefined;
-        this._rsPick = undefined;
 
         this._boundingVolume = undefined;
         this._boundingVolume2D = undefined;
@@ -259,6 +257,7 @@ define([
             if (typeof polyline._bucket !== 'undefined') {
                 var bucket = polyline._bucket;
                 bucket.shaderProgram = bucket.shaderProgram && bucket.shaderProgram.release();
+                bucket.pickShaderProgram = bucket.pickShaderProgram && bucket.pickShaderProgram.release();
             }
             polyline._destroy();
             return true;
@@ -480,22 +479,10 @@ define([
         }
 
         if (pass.pick) {
-            if (typeof this._spPick === 'undefined') {
-                this._spPick = context.getShaderCache().getShaderProgram(
-                        '#define RENDER_FOR_PICK\n\n' + PolylineVS, PolylineFSPick, attributeIndices);
-            }
-
-            if (typeof this._rsPick === 'undefined') {
-                this._rsPick = context.createRenderState();
-            }
-
-            //this._rsPick.depthMask = !useDepthTest;
-            this._rsPick.depthTest.enabled = useDepthTest;
-
             var pickList = this._pickCommands;
             commandLists.pickList = pickList;
 
-            createCommandLists(pickList, boundingVolume, modelMatrix, this._vertexArrays, this._rsPick, this._uniforms, false, this._spPick);
+            createCommandLists(pickList, boundingVolume, modelMatrix, this._vertexArrays, this._rs, this._uniforms, false);
         }
 
         if (!this._commandLists.empty()) {
@@ -503,7 +490,7 @@ define([
         }
     };
 
-    function createCommandLists(commands, boundingVolume, modelMatrix, vertexArrays, renderState, uniforms, combineUniforms, shaderProgram) {
+    function createCommandLists(commands, boundingVolume, modelMatrix, vertexArrays, renderState, uniforms, colorPass) {
         var length = vertexArrays.length;
 
         var commandsLength = commands.length;
@@ -518,7 +505,7 @@ define([
                 var bucketLocator = buckets[n];
 
                 var offset = bucketLocator.offset;
-                var sp = (typeof shaderProgram !== 'undefined') ? shaderProgram : bucketLocator.bucket.shaderProgram;
+                var sp = colorPass ? bucketLocator.bucket.shaderProgram : bucketLocator.bucket.pickShaderProgram;
 
                 var polylines = bucketLocator.bucket.polylines;
                 var polylineLength = polylines.length;
@@ -548,7 +535,7 @@ define([
                             command.vertexArray = va.va;
                             command.renderState = renderState;
 
-                            command.uniformMap = combineUniforms ? combine([uniforms, currentMaterial._uniforms], false, false) : uniforms;
+                            command.uniformMap = combine([uniforms, currentMaterial._uniforms], false, false);
                             command.count = count;
                             command.offset = offset;
 
@@ -587,7 +574,7 @@ define([
                     command.vertexArray = va.va;
                     command.renderState = renderState;
 
-                    command.uniformMap = combineUniforms ? combine([uniforms, currentMaterial._uniforms], false, false) : uniforms;
+                    command.uniformMap = combine([uniforms, currentMaterial._uniforms], false, false);
                     command.count = count;
                     command.offset = offset;
                 }
@@ -635,7 +622,6 @@ define([
      * polylines = polylines && polylines.destroy();
      */
     PolylineCollection.prototype.destroy = function() {
-        this._spPick = this._spPick && this._spPick.release();
         destroyVertexArrays(this);
         releaseShaders(this);
         destroyPolylines(this);
@@ -1019,6 +1005,7 @@ define([
         this.lengthOfPositions = 0;
         this.material = material;
         this.shaderProgram = undefined;
+        this.pickShaderProgram = undefined;
         this.mode = mode;
         this.projection = projection;
         this.ellipsoid = projection.getEllipsoid();
@@ -1040,13 +1027,12 @@ define([
 
         var fsSource =
             '#line 0\n' +
-            Noise +
-            '#line 0\n' +
             this.material.shaderSource +
             '#line 0\n' +
             PolylineFS;
 
         this.shaderProgram = context.getShaderCache().getShaderProgram(PolylineVS, fsSource, attributeIndices);
+        this.pickShaderProgram = context.getShaderCache().getShaderProgram(PolylineVS, createPickFragmentShaderSource(fsSource, 'varying'), attributeIndices);
     };
 
     function intersectsIDL(polyline) {
@@ -1088,7 +1074,7 @@ define([
             var lengths = segments.lengths;
             var positionsLength = positions.length;
 
-            var pickColor = polyline.getPickId(context).unnormalizedRgb;
+            var pickColor = polyline.getPickId(context).color;
 
             var segmentIndex = 0;
             var count = 0;
@@ -1126,10 +1112,10 @@ define([
                     EncodedCartesian3.writeElements(scratchWritePrevPosition, positionArray, positionIndex + 6);
                     EncodedCartesian3.writeElements(scratchWriteNextPosition, positionArray, positionIndex + 12);
 
-                    pickColorArray[colorIndex] = pickColor.red;
-                    pickColorArray[colorIndex + 1] = pickColor.green;
-                    pickColorArray[colorIndex + 2] = pickColor.blue;
-                    pickColorArray[colorIndex + 3] = 255;
+                    pickColorArray[colorIndex] = Color.floatToByte(pickColor.red);
+                    pickColorArray[colorIndex + 1] = Color.floatToByte(pickColor.green);
+                    pickColorArray[colorIndex + 2] = Color.floatToByte(pickColor.blue);
+                    pickColorArray[colorIndex + 3] = Color.floatToByte(pickColor.alpha);
 
                     var direction = (k - 2 < 0) ? -1.0 : 1.0;
                     texCoordExpandWidthAndShowArray[texCoordExpandWidthAndShowIndex] = j / (positionsLength - 1); // s tex coord
