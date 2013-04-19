@@ -76,6 +76,7 @@ require([
 
     widget.placeAt('cesiumContainer');
     widget.startup();
+    widget.fullscreen.viewModel.fullscreenElement(document.body);
 
     var providerViewModels = widget.baseLayerPicker.viewModel.imageryProviderViewModels;
     widget.baseLayerPicker.viewModel.selectedItem(providerViewModels()[8]);
