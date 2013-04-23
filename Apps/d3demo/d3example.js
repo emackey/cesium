@@ -70,8 +70,6 @@
     // Load the data.
     d3.json("nations_geo.json", function(nations) {
 
-      sharedObject.dispatch.onNationsLoaded(nations);
-
       // A bisector since many nation's data is sparsely-defined.
       var bisect = d3.bisector(function(d) { return d[0]; });
 
@@ -149,5 +147,15 @@
         }
         return a[1];
       }
+
+      sharedObject.dispatch.on("nationMouseover.d3", function(nationObject) {
+          dot.style("fill", function(d) {
+                 if (typeof nationObject !== 'undefined' && d.name === nationObject.nationData.name) {
+                     return "#00FF00";
+                 }
+
+                 return colorScale(color(d));
+                 });
+      });
     });
 }());

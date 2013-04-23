@@ -61,6 +61,9 @@ require([
                            ]));
             polyline.setWidth(widthScale(nation.population));
 
+            // push data to polyline so that we have mouseover information available
+            polyline.nationData = nation;
+
             //polyline.getMaterial().uniforms.outlineWidth = yScale(nation.lifeExpectancy);
         }
 
@@ -69,6 +72,8 @@ require([
 
     var widget = new CesiumViewerWidget({
         onObjectMousedOver : function(mousedOverObject) {
+            // notify the d3example
+            sharedObject.dispatch.nationMouseover(mousedOverObject);
             widget.highlightObject(mousedOverObject);
         },
         showSkyBox : false
