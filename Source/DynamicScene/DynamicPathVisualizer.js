@@ -140,14 +140,14 @@ define([
             // CZML_TODO Determine official defaults
             polyline.setWidth(1);
             var material = polyline.getMaterial();
-            if (typeof material === 'undefined' || (material.type !== Material.PolylineOutlineType)) {
-                material = Material.fromType(this._scene.getContext(), Material.PolylineOutlineType);
+            if (typeof material === 'undefined' || (material.type !== Material.PolylineGlowType)) {
+                material = Material.fromType(this._scene.getContext(), Material.PolylineGlowType);
                 polyline.setMaterial(material);
             }
             uniforms = material.uniforms;
-            Color.clone(Color.WHITE, uniforms.color);
-            Color.clone(Color.BLACK, uniforms.outlineColor);
-            uniforms.outlineWidth = 0;
+            //Color.clone(Color.WHITE, uniforms.color);
+            //Color.clone(Color.BLACK, uniforms.outlineColor);
+            //uniforms.outlineWidth = 0;
         } else {
             polyline = this._polylineCollection.get(pathVisualizerIndex);
             uniforms = polyline.getMaterial().uniforms;
@@ -178,13 +178,16 @@ define([
             uniforms.outlineWidth = property.getValue(time, uniforms.outlineWidth);
         }
 
-        property = dynamicPath.width;
-        if (typeof property !== 'undefined') {
-            var width = property.getValue(time);
-            if (typeof width !== 'undefined') {
-                polyline.setWidth(width);
-            }
-        }
+        polyline.setWidth(8.0);
+        uniforms.innerWidth = 4.0;
+        uniforms.color.alpha = 0.5;
+        //property = dynamicPath.width;
+        //if (typeof property !== 'undefined') {
+        //    var width = property.getValue(time);
+        //    if (typeof width !== 'undefined') {
+        //        polyline.setWidth(width);
+        //    }
+        //}
     };
 
     PolylineUpdater.prototype.removeObject = function(dynamicObject) {
