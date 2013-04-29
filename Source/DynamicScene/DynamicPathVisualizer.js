@@ -179,8 +179,6 @@ define([
         }
 
         polyline.setWidth(8.0);
-        uniforms.innerWidth = 4.0;
-        uniforms.color.alpha = 0.5;
         //property = dynamicPath.width;
         //if (typeof property !== 'undefined') {
         //    var width = property.getValue(time);
