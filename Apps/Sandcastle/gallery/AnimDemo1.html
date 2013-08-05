@@ -4,70 +4,41 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">  <!-- Use Chrome Frame in IE -->
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-    <meta name="description" content="A starting point for creating Cesium applications (uses Bing imagery).">
+    <meta name="description" content="A test of the Animation widget.">
+    <meta name="cesium-sandcastle-labels" content="">
     <title>Cesium Demo</title>
     <script type="text/javascript" src="../Sandcastle-header.js"></script>
-    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.2/require.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.6/require.js"></script>
     <script type="text/javascript">
-    require({
-        baseUrl : '../../../Source'
+    require.config({
+        baseUrl : '../../../Source',
+        waitSeconds : 60
     });
     </script>
 </head>
-<body data-sandcastle-bucket="bucket-requirejs.html" data-sandcastle-title="Cesium + require.js">
+<body class="sandcastle-loading" data-sandcastle-bucket="bucket-requirejs.html" data-sandcastle-title="Cesium + require.js">
 <style>
-    body {
-        background: #000;
-        color: #eee;
-        font-family: sans-serif;
-        font-size: 9pt;
-        padding: 0;
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-    .fullSize {
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        border: none;
-        width: 100%;
-        height: 100%;
-    }
-    #toolbar {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-    }
+    @import url(../templates/bucket.css);
 </style>
-
 <div id="cesiumContainer" class="fullSize"></div>
-<div id="toolbar" class="cesium-darker">Loading, please wait...</div>
+<div id="animationContainer" class="cesium-viewer-animationContainer"></div>
+<div id="loadingOverlay"><h1>Loading...</h1></div>
 <script id="cesium_sandcastle_script">
-require([
-    'Cesium', 'Widgets/Animation'
-], function (
-    Cesium, Animation
-) {
+require(['Cesium'], function(Cesium) {
     "use strict";
-    document.head.innerHTML += '<link rel="stylesheet" ' +
-        'href="../../../Source/Widgets/Animation.css" />';
-    
+
     var clock = new Cesium.Clock();
-    var animationController = new Cesium.AnimationController(clock);
-    
-    var parentNode = document.getElementById("toolbar");
-    parentNode.innerHTML = '';
-    var widget = new Animation(parentNode, animationController);
-    
+    var clockViewModel = new Cesium.ClockViewModel(clock);
+    var viewModel = new Cesium.AnimationViewModel(clockViewModel);
+    var widget = new Cesium.Animation('animationContainer', viewModel);
+
     function tick() {
-        animationController.update();
-        widget.update();
+        clock.tick();
         Cesium.requestAnimationFrame(tick);
     }
     Cesium.requestAnimationFrame(tick);
+
+    Sandcastle.finishedLoading();
 });
 </script>
 </body>
