@@ -915,7 +915,7 @@ define([
         }
     }
 
-    var scratchCanvasDimensions = new Cartesian2();
+    var scratchDrawingBufferDimensions = new Cartesian2();
     var scratchToCenter = new Cartesian3();
     var scratchProj = new Cartesian3();
     function updateBoundingVolume(collection, context, frameState, boundingVolume) {
@@ -930,10 +930,9 @@ define([
         var proj = camera.getDirectionWC().multiplyByScalar(toCenter.dot(camera.getDirectionWC()), scratchProj);
         var distance = Math.max(0.0, proj.magnitude() - boundingVolume.radius);
 
-        var canvas = context.getCanvas();
-        scratchCanvasDimensions.x = canvas.clientWidth;
-        scratchCanvasDimensions.y = canvas.clientHeight;
-        var pixelSize = frustum.getPixelSize(scratchCanvasDimensions, distance);
+        scratchDrawingBufferDimensions.x = context.getDrawingBufferWidth();
+        scratchDrawingBufferDimensions.y = context.getDrawingBufferHeight();
+        var pixelSize = frustum.getPixelSize(scratchDrawingBufferDimensions, distance);
         pixelScale = Math.max(pixelSize.x, pixelSize.y);
 
         size = pixelScale * collection._maxScale * collection._maxSize * 2.0;

@@ -49,9 +49,9 @@ define([
      * @demo <a href="http://cesium.agi.com/Cesium/Apps/Sandcastle/index.html?src=Camera.html">Cesium Sandcastle Camera Demo</a>
      * @demo <a href="http://cesium.agi.com/Cesium/Apps/Sandcastle/index.html?src=Camera.html">Sandcastle Example</a> from the <a href="http://cesium.agi.com/2013/02/13/Cesium-Camera-Tutorial/">Camera Tutorial</a>
      */
-    var Camera = function(canvas) {
-        if (typeof canvas === 'undefined') {
-            throw new DeveloperError('canvas is required.');
+    var Camera = function(context) {
+        if (typeof context === 'undefined') {
+            throw new DeveloperError('context is required.');
         }
 
         /**
@@ -124,7 +124,7 @@ define([
          */
         this.frustum = new PerspectiveFrustum();
         this.frustum.fovy = CesiumMath.toRadians(60.0);
-        this.frustum.aspectRatio = canvas.clientWidth / canvas.clientHeight;
+        this.frustum.aspectRatio = context.getDrawingBufferWidth() / context.getDrawingBufferHeight();
 
         /**
          * Defines camera behavior. The controller can be used to perform common camera manipulations.
@@ -138,7 +138,7 @@ define([
         this._invViewMatrix = undefined;
         updateViewMatrix(this);
 
-        this._canvas = canvas;
+        this._context = context;
     };
 
     function updateViewMatrix(camera) {
@@ -312,7 +312,7 @@ define([
      * @return {Camera} A new copy of the Camera instance.
      */
     Camera.prototype.clone = function() {
-        var camera = new Camera(this._canvas);
+        var camera = new Camera(this._context);
         camera.position = this.position.clone();
         camera.direction = this.direction.clone();
         camera.up = this.up.clone();

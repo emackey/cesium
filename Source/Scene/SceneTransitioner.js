@@ -88,7 +88,7 @@ define([
 
         this._scene = scene;
         this._ellipsoid = defaultValue(ellipsoid, Ellipsoid.WGS84);
-        var canvas = scene.getCanvas();
+        var context = scene.getContext();
 
         // Position camera and size frustum so the entire 2D map is visible
         var maxRadii = this._ellipsoid.getMaximumRadius();
@@ -99,7 +99,7 @@ define([
         var frustum = new OrthographicFrustum();
         frustum.right = maxRadii * Math.PI;
         frustum.left = -frustum.right;
-        frustum.top = frustum.right * (canvas.clientHeight / canvas.clientWidth);
+        frustum.top = frustum.right * (context.getDrawingBufferHeight() / context.getDrawingBufferWidth());
         frustum.bottom = -frustum.top;
 
         var transform = new Matrix4(0.0, 0.0, 1.0, 0.0, //
@@ -122,7 +122,7 @@ define([
 
         frustum = new PerspectiveFrustum();
         frustum.fovy = CesiumMath.toRadians(60.0);
-        frustum.aspectRatio = canvas.clientWidth / canvas.clientHeight;
+        frustum.aspectRatio = context.getDrawingBufferWidth() / context.getDrawingBufferHeight();
 
         this._cameraCV = {
             position : position,
@@ -713,8 +713,8 @@ define([
     function updateFrustums(transitioner) {
         var scene = transitioner._scene;
 
-        var canvas = scene.getCanvas();
-        var ratio = canvas.clientHeight / canvas.clientWidth;
+        var context = scene.getContext();
+        var ratio = context.getDrawingBufferHeight() / context.getDrawingBufferWidth();
 
         var frustum = transitioner._camera2D.frustum;
         frustum.top = frustum.right * ratio;
