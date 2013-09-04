@@ -29,14 +29,6 @@
     color: #2E2;
 }
 
-.cesium-animation-themeSwoosh {
-    color: #8AC;
-}
-
-.cesium-animation-themeSwooshHover {
-    color: #AEF;
-}
-
 .cesium-animation-svgText {
     fill: #edffff;
     font-family: Sans-Serif;
@@ -55,6 +47,8 @@
     -moz-user-select: none;
     -webkit-user-select: none;
     user-select: none;
+    fill: #434343;
+    fill-opacity: 0.75;
 }
 
 .cesium-animation-rectButton .cesium-animation-buttonGlow {
@@ -127,48 +121,26 @@
     cursor: pointer;
 }
 
-/* Widget will add:
-.cesium-animation-shuttleRingG .cesium-animation-shuttleRingSwoosh {
-    fill: url(#animation_shuttleRingSwooshGradient);
-}
-
-.cesium-animation-shuttleRingG:hover .cesium-animation-shuttleRingSwoosh {
-    fill: url(#animation_shuttleRingSwooshHovered);
-}
-*/
-
 .cesium-animation-shuttleRingPointer {
-    /* Widget will add: fill: url(#animation_shuttleRingPointerGradient); */
+    fill: #4E78A0;
     cursor: pointer;
 }
 
 .cesium-animation-shuttleRingPausePointer {
-    /* Widget will add: fill: url(#animation_shuttleRingPointerPaused); */
+    fill: #4E78A0;
     cursor: pointer;
 }
 
 .cesium-animation-shuttleRingBack {
-    fill: #181818;
-    fill-opacity: 0.8;
-    stroke: #333;
-    stroke-width: 1.2;
-}
-
-.cesium-animation-shuttleRingSwoosh line {
-    stroke: #8AC;
-    stroke-width: 3;
-    stroke-opacity: 0.2;
+    fill: none;
+    stroke: #434343;
     stroke-linecap: round;
-}
-
-.cesium-animation-knobOuter {
-    /* Widget will add: fill: url(#animation_knobOuter); */
-    cursor: pointer;
-    stroke: #444;
-    stroke-width: 1.2;
+    stroke-width: 20;
+    stroke-opacity: 0.75;
 }
 
 .cesium-animation-knobInner {
-    /* Widget will add: fill: url(#animation_knobInner); */
+    fill: #434343;
+    fill-opacity: 0.75;
     cursor: pointer;
 }

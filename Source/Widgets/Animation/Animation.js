@@ -24,21 +24,6 @@ define([
 
     var widgetForDrag;
 
-    var gradientEnabledColor0 = Color.fromCssColorString('rgba(247,250,255,0.384)');
-    var gradientEnabledColor1 = Color.fromCssColorString('rgba(143,191,255,0.216)');
-    var gradientEnabledColor2 = Color.fromCssColorString('rgba(153,197,255,0.098)');
-    var gradientEnabledColor3 = Color.fromCssColorString('rgba(255,255,255,0.086)');
-
-    var gradientDisabledColor0 = Color.fromCssColorString('rgba(255,255,255,0.267)');
-    var gradientDisabledColor1 = Color.fromCssColorString('rgba(255,255,255,0)');
-
-    var gradientKnobColor = Color.fromCssColorString('rgba(66,67,68,0.3)');
-    var gradientPointerColor = Color.fromCssColorString('rgba(0,0,0,0.5)');
-
-    function getElementColor(element) {
-        return Color.fromCssColorString(window.getComputedStyle(element).getPropertyValue('color'));
-    }
-
     function subscribeAndEvaluate(owner, observablePropertyName, callback, target) {
         callback.call(target, owner[observablePropertyName]);
         return knockout.getObservable(owner, observablePropertyName).subscribe(callback, target);
@@ -79,19 +64,8 @@ define([
         return text;
     }
 
-    function setShuttleRingPointer(shuttleRingPointer, knobOuter, angle) {
+    function setShuttleRingPointer(shuttleRingPointer, angle) {
         shuttleRingPointer.setAttribute('transform', 'translate(100,100) rotate(' + angle + ')');
-        knobOuter.setAttribute('transform', 'rotate(' + angle + ')');
-    }
-
-    var makeColorStringScratch = new Color();
-    function makeColorString(background, gradient) {
-        var gradientAlpha = gradient.alpha;
-        var backgroundAlpha = 1.0 - gradientAlpha;
-        makeColorStringScratch.red = (background.red * backgroundAlpha) + (gradient.red * gradientAlpha);
-        makeColorStringScratch.green = (background.green * backgroundAlpha) + (gradient.green * gradientAlpha);
-        makeColorStringScratch.blue = (background.blue * backgroundAlpha) + (gradient.blue * gradientAlpha);
-        return makeColorStringScratch.toCssColorString();
     }
 
     function rectButton(x, y, path) {
@@ -363,16 +337,10 @@ define([
         // Also, CSS minifiers get confused by this being in an external CSS file.
         var cssStyle = document.createElement('style');
         cssStyle.textContent = '.cesium-animation-rectButton .cesium-animation-buttonGlow { filter: url(#animation_blurred); }\
-.cesium-animation-rectButton .cesium-animation-buttonMain { fill: url(#animation_buttonNormal); }\
-.cesium-animation-buttonToggled .cesium-animation-buttonMain { fill: url(#animation_buttonToggled); }\
-.cesium-animation-rectButton:hover .cesium-animation-buttonMain { fill: url(#animation_buttonHovered); }\
-.cesium-animation-buttonDisabled .cesium-animation-buttonMain { fill: url(#animation_buttonDisabled); }\
-.cesium-animation-shuttleRingG .cesium-animation-shuttleRingSwoosh { fill: url(#animation_shuttleRingSwooshGradient); }\
-.cesium-animation-shuttleRingG:hover .cesium-animation-shuttleRingSwoosh { fill: url(#animation_shuttleRingSwooshHovered); }\
-.cesium-animation-shuttleRingPointer { fill: url(#animation_shuttleRingPointerGradient); }\
-.cesium-animation-shuttleRingPausePointer { fill: url(#animation_shuttleRingPointerPaused); }\
-.cesium-animation-knobOuter { fill: url(#animation_knobOuter); }\
-.cesium-animation-knobInner { fill: url(#animation_knobInner); }';
+.cesium-animation-rectButton .cesium-animation-buttonMain .cesium-animation-buttonToggled .cesium-animation-buttonMain \
+.cesium-animation-rectButton:hover .cesium-animation-buttonMain .cesium-animation-buttonDisabled .cesium-animation-buttonMain \
+.cesium-animation-shuttleRingG .cesium-animation-shuttleRingG:hover .cesium-animation-shuttleRingPointer \
+.cesium-animation-shuttleRingPausePointer .cesium-animation-knobInner';
 
         document.head.insertBefore(cssStyle, document.head.childNodes[0]);
 
@@ -383,9 +351,7 @@ define([
 <div class="cesium-animation-themeSelect"></div>\
 <div class="cesium-animation-themeDisabled"></div>\
 <div class="cesium-animation-themeKnob"></div>\
-<div class="cesium-animation-themePointer"></div>\
-<div class="cesium-animation-themeSwoosh"></div>\
-<div class="cesium-animation-themeSwooshHover"></div>';
+<div class="cesium-animation-themePointer"></div>';
 
         this._theme = themeEle;
         this._themeNormal = themeEle.childNodes[0];
@@ -394,8 +360,6 @@ define([
         this._themeDisabled = themeEle.childNodes[3];
         this._themeKnob = themeEle.childNodes[4];
         this._themePointer = themeEle.childNodes[5];
-        this._themeSwoosh = themeEle.childNodes[6];
-        this._themeSwooshHover = themeEle.childNodes[7];
 
         var svg = document.createElementNS(svgNS, 'svg:svg');
         this._svgNode = svg;
@@ -406,7 +370,7 @@ define([
         var topG = document.createElementNS(svgNS, 'g');
         this._topG = topG;
 
-        this._realtimeSVG = new SvgButton(wingButton(3, 4, '#animation_pathClock'), viewModel.playRealtimeViewModel);
+        this._realtimeSVG = new SvgButton(wingButton(8, 8, '#animation_pathClock'), viewModel.playRealtimeViewModel);
         this._playReverseSVG = new SvgButton(rectButton(44, 99, '#animation_pathPlayReverse'), viewModel.playReverseViewModel);
         this._playForwardSVG = new SvgButton(rectButton(124, 99, '#animation_pathPlay'), viewModel.playForwardViewModel);
         this._pauseSVG = new SvgButton(rectButton(84, 99, '#animation_pathPause'), viewModel.pauseViewModel);
@@ -418,39 +382,19 @@ define([
         buttonsG.appendChild(this._pauseSVG.svgElement);
 
         var shuttleRingBackPanel = svgFromObject({
-            tagName : 'circle',
+            tagName : 'path',
             'class' : 'cesium-animation-shuttleRingBack',
-            cx : 100,
-            cy : 100,
-            r : 99
+            transform : 'translate(31,141)',
+            d : 'M0,0 a80,80 0 1,1 138.564,0'
         });
         this._shuttleRingBackPanel = shuttleRingBackPanel;
 
-        var shuttleRingSwooshG = svgFromObject({
-            tagName : 'g',
-            'class' : 'cesium-animation-shuttleRingSwoosh',
-            children : [{
-                tagName : 'use',
-                transform : 'translate(100,97) scale(-1,1)',
-                'xlink:href' : '#animation_pathSwooshFX'
-            }, {
-                tagName : 'use',
-                transform : 'translate(100,97)',
-                'xlink:href' : '#animation_pathSwooshFX'
-            }, {
-                tagName : 'line',
-                x1 : 100,
-                y1 : 8,
-                x2 : 100,
-                y2 : 22
-            }]
-        });
-        this._shuttleRingSwooshG = shuttleRingSwooshG;
-
         this._shuttleRingPointer = svgFromObject({
-            tagName : 'use',
+            tagName : 'circle',
             'class' : 'cesium-animation-shuttleRingPointer',
-            'xlink:href' : '#animation_pathPointer'
+            cx : 0,
+            cy : -80,
+            r : 10
         });
 
         var knobG = svgFromObject({
@@ -458,15 +402,7 @@ define([
             transform : 'translate(100,100)'
         });
 
-        this._knobOuter = svgFromObject({
-            tagName : 'circle',
-            'class' : 'cesium-animation-knobOuter',
-            cx : 0,
-            cy : 0,
-            r : 71
-        });
-
-        var knobInnerAndShieldSize = 61;
+        var knobInnerAndShieldSize = 63;
 
         var knobInner = svgFromObject({
             tagName : 'circle',
@@ -498,10 +434,8 @@ define([
         topG.appendChild(buttonsG);
 
         shuttleRingBackG.appendChild(shuttleRingBackPanel);
-        shuttleRingBackG.appendChild(shuttleRingSwooshG);
         shuttleRingBackG.appendChild(this._shuttleRingPointer);
 
-        knobG.appendChild(this._knobOuter);
         knobG.appendChild(knobInner);
         knobG.appendChild(this._knobDate);
         knobG.appendChild(this._knobTime);
@@ -519,16 +453,12 @@ define([
 
         shuttleRingBackPanel.addEventListener('mousedown', mouseCallback, true);
         shuttleRingBackPanel.addEventListener('touchstart', mouseCallback, true);
-        shuttleRingSwooshG.addEventListener('mousedown', mouseCallback, true);
-        shuttleRingSwooshG.addEventListener('touchstart', mouseCallback, true);
         document.addEventListener('mousemove', mouseCallback, true);
         document.addEventListener('touchmove', mouseCallback, true);
         document.addEventListener('mouseup', mouseCallback, true);
         document.addEventListener('touchend', mouseCallback, true);
         this._shuttleRingPointer.addEventListener('mousedown', mouseCallback, true);
         this._shuttleRingPointer.addEventListener('touchstart', mouseCallback, true);
-        this._knobOuter.addEventListener('mousedown', mouseCallback, true);
-        this._knobOuter.addEventListener('touchstart', mouseCallback, true);
 
         //TODO: Since the animation widget uses SVG and has no HTML backing,
         //we need to wire everything up manually.  Knockout can supposedly
@@ -552,7 +482,7 @@ define([
         }),
 
         subscribeAndEvaluate(viewModel, 'shuttleRingAngle', function(value) {
-            setShuttleRingPointer(that._shuttleRingPointer, that._knobOuter, value);
+            setShuttleRingPointer(that._shuttleRingPointer, value);
         }),
 
         subscribeAndEvaluate(viewModel, 'dateLabel', function(value) {
@@ -620,16 +550,12 @@ define([
         var mouseCallback = this._mouseCallback;
         this._shuttleRingBackPanel.removeEventListener('mousedown', mouseCallback, true);
         this._shuttleRingBackPanel.removeEventListener('touchstart', mouseCallback, true);
-        this._shuttleRingSwooshG.removeEventListener('mousedown', mouseCallback, true);
-        this._shuttleRingSwooshG.removeEventListener('touchstart', mouseCallback, true);
         document.removeEventListener('mousemove', mouseCallback, true);
         document.removeEventListener('touchmove', mouseCallback, true);
         document.removeEventListener('mouseup', mouseCallback, true);
         document.removeEventListener('touchend', mouseCallback, true);
         this._shuttleRingPointer.removeEventListener('mousedown', mouseCallback, true);
         this._shuttleRingPointer.removeEventListener('touchstart', mouseCallback, true);
-        this._knobOuter.removeEventListener('mousedown', mouseCallback, true);
-        this._knobOuter.removeEventListener('touchstart', mouseCallback, true);
 
         this._container.removeChild(this._svgNode);
         this._container.removeChild(this._theme);
@@ -681,10 +607,10 @@ define([
         var scaleX = width / baseWidth;
         var scaleY = height / baseHeight;
 
-        svg.style.cssText = 'width: ' + width + 'px; height: ' + height + 'px; position: absolute; bottom: 0; left: 0;';
+        svg.style.cssText = 'width: ' + width + 'px; height: ' + (height+28) + 'px; position: absolute; bottom: 0; left: 0;';
         svg.setAttribute('width', width);
-        svg.setAttribute('height', height);
-        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', height+28);
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + (height+28));
 
         this._topG.setAttribute('transform', 'scale(' + scaleX + ',' + scaleY + ')');
 
@@ -705,108 +631,9 @@ define([
      * animation.applyThemeChanges();
      */
     Animation.prototype.applyThemeChanges = function() {
-        var buttonNormalBackColor = getElementColor(this._themeNormal);
-        var buttonHoverBackColor = getElementColor(this._themeHover);
-        var buttonToggledBackColor = getElementColor(this._themeSelect);
-        var buttonDisabledBackColor = getElementColor(this._themeDisabled);
-        var knobBackColor = getElementColor(this._themeKnob);
-        var pointerColor = getElementColor(this._themePointer);
-        var swooshColor = getElementColor(this._themeSwoosh);
-        var swooshHoverColor = getElementColor(this._themeSwooshHover);
-
         var defsElement = svgFromObject({
             tagName : 'defs',
             children : [{
-                id : 'animation_buttonNormal',
-                tagName : 'linearGradient',
-                x1 : '50%',
-                y1 : '0%',
-                x2 : '50%',
-                y2 : '100%',
-                children : [
-                //add a 'stop-opacity' field to make translucent.
-                {
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-color' : makeColorString(buttonNormalBackColor, gradientEnabledColor0)
-                }, {
-                    tagName : 'stop',
-                    offset : '12%',
-                    'stop-color' : makeColorString(buttonNormalBackColor, gradientEnabledColor1)
-                }, {
-                    tagName : 'stop',
-                    offset : '46%',
-                    'stop-color' : makeColorString(buttonNormalBackColor, gradientEnabledColor2)
-                }, {
-                    tagName : 'stop',
-                    offset : '81%',
-                    'stop-color' : makeColorString(buttonNormalBackColor, gradientEnabledColor3)
-                }]
-            }, {
-                id : 'animation_buttonHovered',
-                tagName : 'linearGradient',
-                x1 : '50%',
-                y1 : '0%',
-                x2 : '50%',
-                y2 : '100%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-color' : makeColorString(buttonHoverBackColor, gradientEnabledColor0)
-                }, {
-                    tagName : 'stop',
-                    offset : '12%',
-                    'stop-color' : makeColorString(buttonHoverBackColor, gradientEnabledColor1)
-                }, {
-                    tagName : 'stop',
-                    offset : '46%',
-                    'stop-color' : makeColorString(buttonHoverBackColor, gradientEnabledColor2)
-                }, {
-                    tagName : 'stop',
-                    offset : '81%',
-                    'stop-color' : makeColorString(buttonHoverBackColor, gradientEnabledColor3)
-                }]
-            }, {
-                id : 'animation_buttonToggled',
-                tagName : 'linearGradient',
-                x1 : '50%',
-                y1 : '0%',
-                x2 : '50%',
-                y2 : '100%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-color' : makeColorString(buttonToggledBackColor, gradientEnabledColor0)
-                }, {
-                    tagName : 'stop',
-                    offset : '12%',
-                    'stop-color' : makeColorString(buttonToggledBackColor, gradientEnabledColor1)
-                }, {
-                    tagName : 'stop',
-                    offset : '46%',
-                    'stop-color' : makeColorString(buttonToggledBackColor, gradientEnabledColor2)
-                }, {
-                    tagName : 'stop',
-                    offset : '81%',
-                    'stop-color' : makeColorString(buttonToggledBackColor, gradientEnabledColor3)
-                }]
-            }, {
-                id : 'animation_buttonDisabled',
-                tagName : 'linearGradient',
-                x1 : '50%',
-                y1 : '0%',
-                x2 : '50%',
-                y2 : '100%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-color' : makeColorString(buttonDisabledBackColor, gradientDisabledColor0)
-                }, {
-                    tagName : 'stop',
-                    offset : '75%',
-                    'stop-color' : makeColorString(buttonDisabledBackColor, gradientDisabledColor1)
-                }]
-            }, {
                 id : 'animation_blurred',
                 tagName : 'filter',
                 width : '200%',
@@ -817,140 +644,6 @@ define([
                     tagName : 'feGaussianBlur',
                     stdDeviation : 4,
                     'in' : 'SourceGraphic'
-                }]
-            }, {
-                id : 'animation_shuttleRingSwooshGradient',
-                tagName : 'linearGradient',
-                x1 : '50%',
-                y1 : '0%',
-                x2 : '50%',
-                y2 : '100%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-opacity' : 0.2,
-                    'stop-color' : swooshColor.toCssColorString()
-                }, {
-                    tagName : 'stop',
-                    offset : '85%',
-                    'stop-opacity' : 0.85,
-                    'stop-color' : swooshColor.toCssColorString()
-                }, {
-                    tagName : 'stop',
-                    offset : '95%',
-                    'stop-opacity' : 0.05,
-                    'stop-color' : swooshColor.toCssColorString()
-                }]
-            }, {
-                id : 'animation_shuttleRingSwooshHovered',
-                tagName : 'linearGradient',
-                x1 : '50%',
-                y1 : '0%',
-                x2 : '50%',
-                y2 : '100%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-opacity' : 0.2,
-                    'stop-color' : swooshHoverColor.toCssColorString()
-                }, {
-                    tagName : 'stop',
-                    offset : '85%',
-                    'stop-opacity' : 0.85,
-                    'stop-color' : swooshHoverColor.toCssColorString()
-                }, {
-                    tagName : 'stop',
-                    offset : '95%',
-                    'stop-opacity' : 0.05,
-                    'stop-color' : swooshHoverColor.toCssColorString()
-                }]
-            }, {
-                id : 'animation_shuttleRingPointerGradient',
-                tagName : 'linearGradient',
-                x1 : '0%',
-                y1 : '50%',
-                x2 : '100%',
-                y2 : '50%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-color' : pointerColor.toCssColorString()
-                }, {
-                    tagName : 'stop',
-                    offset : '40%',
-                    'stop-color' : pointerColor.toCssColorString()
-                }, {
-                    tagName : 'stop',
-                    offset : '60%',
-                    'stop-color' : makeColorString(pointerColor, gradientPointerColor)
-                }, {
-                    tagName : 'stop',
-                    offset : '100%',
-                    'stop-color' : makeColorString(pointerColor, gradientPointerColor)
-                }]
-            }, {
-                id : 'animation_shuttleRingPointerPaused',
-                tagName : 'linearGradient',
-                x1 : '0%',
-                y1 : '50%',
-                x2 : '100%',
-                y2 : '50%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '0%',
-                    'stop-color' : '#CCC'
-                }, {
-                    tagName : 'stop',
-                    offset : '40%',
-                    'stop-color' : '#CCC'
-                }, {
-                    tagName : 'stop',
-                    offset : '60%',
-                    'stop-color' : '#555'
-                }, {
-                    tagName : 'stop',
-                    offset : '100%',
-                    'stop-color' : '#555'
-                }]
-            }, {
-                id : 'animation_knobOuter',
-                tagName : 'linearGradient',
-                x1 : '20%',
-                y1 : '0%',
-                x2 : '90%',
-                y2 : '100%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '5%',
-                    'stop-color' : makeColorString(knobBackColor, gradientEnabledColor0)
-                }, {
-                    tagName : 'stop',
-                    offset : '60%',
-                    'stop-color' : makeColorString(knobBackColor, gradientKnobColor)
-                }, {
-                    tagName : 'stop',
-                    offset : '85%',
-                    'stop-color' : makeColorString(knobBackColor, gradientEnabledColor1)
-                }]
-            }, {
-                id : 'animation_knobInner',
-                tagName : 'linearGradient',
-                x1 : '20%',
-                y1 : '0%',
-                x2 : '90%',
-                y2 : '100%',
-                children : [{
-                    tagName : 'stop',
-                    offset : '5%',
-                    'stop-color' : makeColorString(knobBackColor, gradientKnobColor)
-                }, {
-                    tagName : 'stop',
-                    offset : '60%',
-                    'stop-color' : makeColorString(knobBackColor, gradientEnabledColor0)
-                }, {
-                    tagName : 'stop',
-                    offset : '85%',
-                    'stop-color' : makeColorString(knobBackColor, gradientEnabledColor3)
                 }]
             }, {
                 id : 'animation_pathReset',
@@ -990,10 +683,6 @@ define([
                 id : 'animation_pathPointer',
                 tagName : 'path',
                 d : 'M-15,-65,-15,-55,15,-55,15,-65,0,-95z'
-            }, {
-                id : 'animation_pathSwooshFX',
-                tagName : 'path',
-                d : 'm 85,0 c 0,16.617 -4.813944,35.356 -13.131081,48.4508 h 6.099803 c 8.317138,-13.0948 13.13322,-28.5955 13.13322,-45.2124 0,-46.94483 -38.402714,-85.00262 -85.7743869,-85.00262 -1.0218522,0 -2.0373001,0.0241 -3.0506131,0.0589 45.958443,1.59437 82.723058,35.77285 82.723058,81.70532 z'
             }]
         });
 
