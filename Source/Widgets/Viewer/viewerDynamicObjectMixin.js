@@ -71,7 +71,6 @@ define(['../../Core/BoundingSphere',
 
         //Balloon
         var balloonContainer = document.createElement('div');
-        balloonContainer.className = 'cesium-viewer-balloonContainer';
         viewer.container.appendChild(balloonContainer);
 
         var balloon = new Balloon(balloonContainer, viewer.scene);

@@ -33,8 +33,8 @@ define([
         var posX = 0;
         var posY = 0;
         var container = viewModel._container;
-        var containerWidth = container.clientWidth;
-        var containerHeight = container.clientHeight;
+        var containerWidth = container.parentNode.clientWidth;
+        var containerHeight = container.parentNode.clientHeight;
 
         viewModel._maxWidth = toPx(containerWidth * 0.50);
         viewModel._maxHeight = toPx(containerHeight * 0.50);
