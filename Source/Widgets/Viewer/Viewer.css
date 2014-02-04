@@ -1,4 +1,5 @@
 @import url(../Animation/Animation.css);
+@import url(../Navigation/Navigation.css);
 @import url(../BaseLayerPicker/BaseLayerPicker.css);
 @import url(../CesiumWidget/CesiumWidget.css);
 @import url(../FullscreenButton/FullscreenButton.css);
@@ -42,6 +43,15 @@
 	padding: 0;
 	width: 169px;
 	height: 112px;
+}
+
+.cesium-viewer-navigationContainer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0;
+    width: 200px;
+    height: 200px;
 }
 
 .cesium-viewer-fullscreenContainer {
