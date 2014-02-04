@@ -14,6 +14,8 @@ define([
         '../../DynamicScene/DataSourceDisplay',
         '../Animation/Animation',
         '../Animation/AnimationViewModel',
+        '../Navigation/Navigation',
+        '../Navigation/NavigationViewModel',
         '../BaseLayerPicker/BaseLayerPicker',
         '../BaseLayerPicker/createDefaultBaseLayers',
         '../CesiumWidget/CesiumWidget',
@@ -39,6 +41,8 @@ define([
         DataSourceDisplay,
         Animation,
         AnimationViewModel,
+        Navigation,
+        NavigationViewModel,
         BaseLayerPicker,
         createDefaultBaseLayers,
         CesiumWidget,
@@ -261,6 +265,15 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
             animation = new Animation(animationContainer, new AnimationViewModel(clockViewModel));
         }
 
+        //Navigation
+        var navigation;
+        if (typeof options.navigation === 'undefined' || options.navigation !== false) {
+            var navigationContainer = document.createElement('div');
+            navigationContainer.className = 'cesium-viewer-navigationContainer';
+            viewerContainer.appendChild(navigationContainer);
+            navigation = new Navigation(navigationContainer, new NavigationViewModel(cesiumWidget.canvas, cesiumWidget.scene.getCamera().controller));
+        }
+
         //Timeline
         var timeline;
         if (!defined(options.timeline) || options.timeline !== false) {
@@ -333,6 +346,7 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
         this._sceneModePicker = sceneModePicker;
         this._baseLayerPicker = baseLayerPicker;
         this._animation = animation;
+        this._navigation = navigation;
         this._timeline = timeline;
         this._fullscreenButton = fullscreenButton;
         this._eventHelper = eventHelper;
@@ -411,6 +425,17 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
         animation : {
             get : function() {
                 return this._animation;
+            }
+        },
+
+        /**
+         * Gets the Navigation widget.
+         * @memberof Viewer.prototype
+         * @type {Navigation}
+         */
+        navigation : {
+            get : function() {
+                return this._navigation;
             }
         },
 
@@ -619,7 +644,9 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
 
         var timelineExists = defined(this._timeline);
         var animationExists = defined(this._animation);
+        var navigationExists = defined(this._navigation);
         var animationContainer;
+        var navigationContainer;
 
         var resizeWidgets = !animationExists;
         var animationWidth = 0;
@@ -648,6 +675,35 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
                 animationContainer.style.height = '70px';
                 resizeWidgets = true;
                 this._animation.resize();
+            }
+        }
+
+        var navigationWidth = 0;
+        if (navigationExists) {
+            var lastWidth = this._lastWidth;
+            navigationContainer = this._navigation.container;
+            if (width > 900) {
+                if (lastWidth <= 900) {
+                    navigationWidth = 169;
+                    navigationContainer.style.width = '169px';
+                    navigationContainer.style.height = '169px';
+                    resizeWidgets = true;
+                    this._navigation.resize();
+                }
+            } else if (width >= 600) {
+                if (lastWidth < 600 || lastWidth > 900) {
+                    navigationWidth = 136;
+                    navigationContainer.style.width = '136px';
+                    navigationContainer.style.height = '136px';
+                    resizeWidgets = true;
+                    this._navigation.resize();
+                }
+            } else if (lastWidth > 600 || lastWidth === 0) {
+                navigationWidth = 106;
+                navigationContainer.style.width = '106px';
+                navigationContainer.style.height = '106px';
+                resizeWidgets = true;
+                this._navigation.resize();
             }
         }
 
@@ -681,6 +737,9 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
      * @memberof Viewer
      */
     Viewer.prototype.render = function() {
+        if(defined(this._navigation)) {
+            this._navigation.viewModel.update(this.scene.mode);
+        }
         this._cesiumWidget.render();
     };
 

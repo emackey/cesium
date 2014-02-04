@@ -4,6 +4,7 @@ define([
         '../../Core/defined',
         '../../Core/DeveloperError',
         '../../Core/defineProperties',
+        '../../Core/Ellipsoid',
         '../../Core/Event',
         '../../Core/EventHelper',
         '../../Core/ScreenSpaceEventType',
@@ -15,6 +16,7 @@ define([
         defined,
         DeveloperError,
         defineProperties,
+        Ellipsoid,
         Event,
         EventHelper,
         ScreenSpaceEventType,
@@ -140,15 +142,18 @@ define([
 
                     if (sceneMode === SceneMode.COLUMBUS_VIEW || sceneMode === SceneMode.SCENE2D) {
                         viewer.scene.getScreenSpaceCameraController().enableTranslate = !defined(value);
+                        viewer.navigation.viewModel.enableTranslate = !defined(value);
                     }
 
                     if (sceneMode === SceneMode.COLUMBUS_VIEW || sceneMode === SceneMode.SCENE3D) {
                         viewer.scene.getScreenSpaceCameraController().enableTilt = !defined(value);
+                        viewer.navigation.viewModel.enableTilt = !defined(value);
                     }
 
                     if (trackedObject !== value) {
                         trackedObject = value;
                         dynamicObjectView = defined(value) ? new DynamicObjectView(value, viewer.scene, viewer.centralBody.getEllipsoid()) : undefined;
+                        viewer.navigation.viewModel.setEllipsoid(defined(value) ? Ellipsoid.UNIT_SPHERE : viewer.centralBody.getEllipsoid());
                         onObjectTracked.raiseEvent(viewer, value);
                     }
                 }
