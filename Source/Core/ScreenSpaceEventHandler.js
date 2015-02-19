@@ -63,7 +63,6 @@ define([
     // selected element, or a sequence of events that originated from the selected element
     // (for example, a click followed by a drag out and release).
     function isEventInScope(screenSpaceEventHandler, event) {
-        debugger
         var element = screenSpaceEventHandler._element;
         if (defined(screenSpaceEventHandler._buttonDown) || screenSpaceEventHandler._isPinching ||
                 (event.target === element) || element.contains(event.target)) {
@@ -80,7 +79,7 @@ define([
                 callback(screenSpaceEventHandler, e);
             };
         } else {
-            // If the listener is registered on the document, need to filter events for scope.
+            // If the listener is registered on the document, we need to filter events for scope.
             listener = function(e) {
                 if (isEventInScope(screenSpaceEventHandler, event)) {
                     callback(screenSpaceEventHandler, e);
