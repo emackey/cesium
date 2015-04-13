@@ -224,6 +224,15 @@ define([
                 var loadPromise;
 
                 if (/\.czml$/i.test(fileName)) {
+                    var objs = JSON.parse(evt.target.result);
+                    window.ed = JSON.stringify(objs, false, 4);
+                    var octetBlob = new Blob([window.ed], {
+                        'type' : 'application/octet-stream',
+                        'endings' : 'native'
+                    });
+                    window.octetBlobURL = URL.createObjectURL(octetBlob);
+                    window.location.href = window.octetBlobURL;
+                    //A save dialog will pop up with a GUID, to save the pretty czml.
                     loadPromise = CzmlDataSource.load(JSON.parse(evt.target.result), {
                         sourceUri : fileName
                     });
