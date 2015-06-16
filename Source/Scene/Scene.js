@@ -1665,6 +1665,7 @@ define([
         callAfterRenderFunctions(frameState);
 
         scene._postRender.raiseEvent(scene, time);
+window.ed = undefined;
     }
 
     /**
@@ -1806,6 +1807,7 @@ define([
             throw new DeveloperError('windowPosition is undefined.');
         }
         //>>includeEnd('debug');
+window.ed = 'pick';
 
         var context = this._context;
         var us = context.uniformState;
@@ -1835,6 +1837,7 @@ define([
         var object = this._pickFramebuffer.end(scratchRectangle);
         context.endFrame();
         callAfterRenderFunctions(frameState);
+window.ed = 'render';
         return object;
     };
 

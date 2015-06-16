@@ -321,6 +321,11 @@ define([
         var enabled = (defined(passState.scissorTest)) ? passState.scissorTest.enabled : scissorTest.enabled;
 
         enableOrDisable(gl, gl.SCISSOR_TEST, enabled);
+        if (enabled || window.lastSTest) {
+            console.log('SCISSOR_TEST ' + enabled);
+            debugger;
+        }
+        window.lastSTest = enabled;
 
         if (enabled) {
             var rectangle = (defined(passState.scissorTest)) ? passState.scissorTest.rectangle : scissorTest.rectangle;

@@ -509,6 +509,10 @@ define([
 
     OIT.prototype.clear = function(context, passState, clearColor) {
         var framebuffer = passState.framebuffer;
+        if (window.ed) {
+            console.log(window.ed);
+            debugger;
+        }
 
         passState.framebuffer = this._opaqueFBO;
         Color.clone(clearColor, this._opaqueClearCommand.color);

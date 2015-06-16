@@ -1704,6 +1704,9 @@ define([
 
     function applyRenderState(context, renderState, passState) {
         var previousState = context._currentRenderState;
+        if (window.ed === 'render' && window.lastSTest) {
+            debugger;
+        }
         if (previousState !== renderState) {
             context._currentRenderState = renderState;
             RenderState.partialApply(context._gl, previousState, renderState, passState);
