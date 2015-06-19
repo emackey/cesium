@@ -516,6 +516,7 @@ define([
 
         return funcs;
     }
+    window.r0 = window.r1 = window.r2 = window.s0 = window.s1 = window.b0 = window.b1 = window.v0 = window.v1 = 0;
 
     RenderState.partialApply = function(gl, previousRenderState, renderState, previousPassState, passState) {
         if (previousRenderState !== renderState) {
@@ -529,31 +530,41 @@ define([
             if (!defined(funcs)) {
                 funcs = createFuncs(previousRenderState, renderState);
                 renderState._applyFunctions[previousRenderState.id] = funcs;
-            }
+                ++window.r2;
+            } else ++window.r1;
 
             var len = funcs.length;
             for (var i = 0; i < len; ++i) {
                 funcs[i](gl, renderState);
             }
-        }
+        } else ++window.r0;
 
         var previousScissorTest = (defined(previousPassState.scissorTest)) ? previousPassState.scissorTest : previousRenderState.scissorTest;
         var scissorTest = (defined(passState.scissorTest)) ? passState.scissorTest : renderState.scissorTest;
         if (previousScissorTest !== scissorTest) {
             applyScissorTest(gl, renderState, passState);
-        }
+            ++window.s1;
+        } else ++window.s0;
 
         var previousBlendingEnabled = (defined(previousPassState.blendingEnabled)) ? previousPassState.blendingEnabled : previousRenderState.blending.enabled;
         var blendingEnabled = (defined(passState.blendingEnabled)) ? passState.blendingEnabled : renderState.blending.enabled;
         if ((previousBlendingEnabled !== blendingEnabled) ||
                 (blendingEnabled && (previousRenderState.blending !== renderState.blending))) {
             applyBlending(gl, renderState, passState);
-        }
+            ++window.b1;
+        } else ++window.b0;
 
         if (previousRenderState !== renderState || previousPassState.context !== passState.context) {
             applyViewport(gl, renderState, passState);
-        }
+            ++window.v1;
+        } else ++window.v0;
     };
+    window.stat = function() {
+        console.log('RenderState new funcs ' + window.r2 + ' reuse funcs ' + window.r1 + ' skip ' + window.r0 +
+                ' scissor apply ' + window.s1 + ' skip ' + window.s0 +
+                ' blend apply ' + window.b1 + ' skip ' + window.b0 +
+                ' viewport apply ' + window.v1 + ' skip ' + window.v0);
+    }
 
     /**
      * Duplicates a RenderState instance. The object returned must still be created with {@link Context#createRenderState}.
