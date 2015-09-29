@@ -305,7 +305,11 @@ define([
         this._currentFramebuffer = undefined;
         this._maxFrameTextureUnitIndex = 0;
 
-        this._pickObjects = {};
+        // Object.create(null) suggestion from http://speakingjs.com/es5/ch17.html#dict_pattern
+        //this._pickObjects = Object.create(null);
+        // http://www.2ality.com/2015/01/es6-maps-sets.html
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+        this._pickObjects = new Map();
         this._nextPickColor = new Uint32Array(1);
 
         /**
@@ -1007,7 +1011,8 @@ define([
         }
         //>>includeEnd('debug');
 
-        return this._pickObjects[pickColor.toRgba()];
+        //return this._pickObjects[pickColor.toRgba()];
+        return this._pickObjects.get(pickColor.toRgba());
     };
 
     function PickId(pickObjects, key, color) {
@@ -1028,7 +1033,9 @@ define([
     });
 
     PickId.prototype.destroy = function() {
-        delete this._pickObjects[this.key];
+        //this._pickObjects[this.key] = undefined;
+        //delete this._pickObjects[this.key];
+        this._pickObjects['delete'](this.key);
         return undefined;
     };
 
@@ -1066,7 +1073,8 @@ define([
             throw new RuntimeError('Out of unique Pick IDs.');
         }
 
-        this._pickObjects[key] = object;
+        //this._pickObjects[key] = object;
+        this._pickObjects.set(key, object);
         return new PickId(this._pickObjects, key, Color.fromRgba(key));
     };
 
