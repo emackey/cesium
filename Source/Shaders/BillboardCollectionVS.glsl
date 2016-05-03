@@ -250,7 +250,8 @@ void main()
 #endif
 
     vec4 positionWC = computePositionWindowCoordinates(positionEC, imageSize, scale, direction, origin, translate, pixelOffset, alignedAxis, validAlignedAxis, rotation, sizeInMeters);
-    gl_Position = czm_viewportOrthographic * vec4(positionWC.xy, -positionWC.z, 1.0);
+    //gl_Position = czm_viewportOrthographic * vec4(positionWC.xy, -positionWC.z, 1.0);
+    gl_Position = czm_viewportOrthographic * vec4(floor(positionWC.xy + 0.5), -positionWC.z, 1.0);
     v_textureCoordinates = textureCoordinates;
 
 #ifdef RENDER_FOR_PICK
