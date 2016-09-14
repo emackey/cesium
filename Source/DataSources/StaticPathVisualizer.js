@@ -11,6 +11,7 @@ define([
         '../Core/ReferenceFrame',
         '../Core/TimeInterval',
         '../Core/Transforms',
+        '../Scene/Material',
         '../Scene/PolylineCollection',
         '../Scene/SceneMode',
         './CompositePositionProperty',
@@ -33,6 +34,7 @@ define([
         ReferenceFrame,
         TimeInterval,
         Transforms,
+        Material,
         PolylineCollection,
         SceneMode,
         CompositePositionProperty,
@@ -323,11 +325,36 @@ define([
         // TODO: How to tell when positionProperty is meaningfully changed?  There's a definitionChanged event...
         if (!defined(polyline.positions[0])) {
             polyline.positions = subSample(positionProperty, sampleStart, sampleStop, this._referenceFrame, resolution, polyline.positions.slice());
+
+            // TODO: Replace with color.
+            var junkMaterial = MaterialProperty.getValue(time, staticPathGraphics._material, polyline.material);
+
+            polyline.material = new Material({
+                fabric : {
+                    uniforms : {
+                        updateTime : new Cartesian3(0.0, 0.0, 0.0),
+                        color: junkMaterial.uniforms.evenColor  // TODO: Replace with color.
+                    },
+                    components : { // 'vec3(1.0)'
+                        diffuse : 'color.rgb', //'vec3(0.5, 0.8, 1.0)',
+                        alpha : 'color.a * smoothstep(updateTime.x, updateTime.x - updateTime.y, materialInput.st.s) * smoothstep(0.0, updateTime.x - updateTime.y, materialInput.st.s)'
+                        //alpha : '((materialInput.st.s < updateTime.x) ? 1.0 : 0.4)'  //'materialInput.st.s'
+                    }
+                }
+            });
         }
 
+        var totalDuration = JulianDate.secondsDifference(sampleStop, sampleStart);
+        var currentDuration = JulianDate.secondsDifference(time, sampleStart);
+        var uniforms = polyline.material.uniforms;
+        uniforms.updateTime.x = currentDuration / totalDuration;
+        uniforms.updateTime.y = resolution / totalDuration;
+
         polyline.show = true;
-        polyline.material = MaterialProperty.getValue(time, staticPathGraphics._material, polyline.material);
+        //polyline.material = MaterialProperty.getValue(time, staticPathGraphics._material, polyline.material);
         polyline.width = Property.getValueOrDefault(staticPathGraphics._width, time, defaultWidth);
+
+
     };
 
     PolylineUpdater.prototype.removeObject = function(item) {
