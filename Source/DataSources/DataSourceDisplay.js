@@ -25,6 +25,7 @@ define([
         './PolylineGeometryUpdater',
         './PolylineVolumeGeometryUpdater',
         './RectangleGeometryUpdater',
+        './StaticPathVisualizer',
         './WallGeometryUpdater'
     ], function(
         BoundingSphere,
@@ -52,6 +53,7 @@ define([
         PolylineGeometryUpdater,
         PolylineVolumeGeometryUpdater,
         RectangleGeometryUpdater,
+        StaticPathVisualizer,
         WallGeometryUpdater) {
     'use strict';
 
@@ -79,7 +81,7 @@ define([
             throw new DeveloperError('dataSourceCollection is required.');
         }
         //>>includeEnd('debug');
-        
+
         GroundPrimitive.initializeTerrainHeights();
 
         var scene = options.scene;
@@ -127,7 +129,8 @@ define([
                 new LabelVisualizer(scene, entities),
                 new ModelVisualizer(scene, entities),
                 new PointVisualizer(scene, entities),
-                new PathVisualizer(scene, entities)];
+                new PathVisualizer(scene, entities),
+                new StaticPathVisualizer(scene, entities)];
     };
 
     defineProperties(DataSourceDisplay.prototype, {
@@ -239,7 +242,7 @@ define([
             this._ready = false;
             return false;
         }
-        
+
         var result = true;
 
         var i;

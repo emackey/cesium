@@ -20,6 +20,7 @@ define([
      * @see PathVisualizer
      * @see PointVisualizer
      * @see GeometryVisualizer
+     * @see StaticPathVisualizer
      */
     function Visualizer() {
         DeveloperError.throwInstantiationError();

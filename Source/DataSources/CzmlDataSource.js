@@ -76,6 +76,7 @@ define([
         './Rotation',
         './SampledPositionProperty',
         './SampledProperty',
+        './StaticPathGraphics',
         './StripeMaterialProperty',
         './StripeOrientation',
         './TimeIntervalCollectionPositionProperty',
@@ -159,6 +160,7 @@ define([
         Rotation,
         SampledPositionProperty,
         SampledProperty,
+        StaticPathGraphics,
         StripeMaterialProperty,
         StripeOrientation,
         TimeIntervalCollectionPositionProperty,
@@ -1624,6 +1626,32 @@ define([
         processPacketData(ShadowMode, rectangle, 'shadows', rectangleData.shadows, interval, sourceUri, entityCollection);
     }
 
+    function processStaticPath(entity, packet, entityCollection, sourceUri) {
+        var staticPathData = packet.staticPath;
+        if (!defined(staticPathData)) {
+            return;
+        }
+
+        var interval;
+        var intervalString = staticPathData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
+        }
+
+        var staticPath = entity.staticPath;
+        if (!defined(staticPath)) {
+            entity.staticPath = staticPath = new StaticPathGraphics();
+        }
+
+        processPacketData(Boolean, staticPath, 'show', staticPathData.show, interval, sourceUri, entityCollection);
+        processPacketData(Number, staticPath, 'width', staticPathData.width, interval, sourceUri, entityCollection);
+        processPacketData(Number, staticPath, 'resolution', staticPathData.resolution, interval, sourceUri, entityCollection);
+        processPacketData(Number, staticPath, 'leadTime', staticPathData.leadTime, interval, sourceUri, entityCollection);
+        processPacketData(Number, staticPath, 'trailTime', staticPathData.trailTime, interval, sourceUri, entityCollection);
+        processMaterialPacketData(staticPath, 'material', staticPathData.material, interval, sourceUri, entityCollection);
+    }
+
     function processWall(entity, packet, entityCollection, sourceUri) {
         var wallData = packet.wall;
         if (!defined(wallData)) {
@@ -1958,6 +1986,7 @@ define([
         processPolyline, //
         processRectangle, //
         processPosition, //
+        processStaticPath, //
         processViewFrom, //
         processWall, //
         processOrientation, //

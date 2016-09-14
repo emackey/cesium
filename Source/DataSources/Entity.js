@@ -29,6 +29,7 @@ define([
         './PolylineVolumeGraphics',
         './Property',
         './RectangleGraphics',
+        './StaticPathGraphics',
         './WallGraphics'
     ], function(
         Cartesian3,
@@ -60,6 +61,7 @@ define([
         PolylineVolumeGraphics,
         Property,
         RectangleGraphics,
+        StaticPathGraphics,
         WallGraphics) {
     'use strict';
 
@@ -111,6 +113,7 @@ define([
      * @param {PolylineGraphics} [options.polyline] A polyline to associate with this entity.
      * @param {PolylineVolumeGraphics} [options.polylineVolume] A polylineVolume to associate with this entity.
      * @param {RectangleGraphics} [options.rectangle] A rectangle to associate with this entity.
+     * @param {StaticPathGraphics} [options.staticPath] A static path to associate with this entity.
      * @param {WallGraphics} [options.wall] A wall to associate with this entity.
      *
      * @see {@link http://cesiumjs.org/2015/02/02/Visualizing-Spatial-Data/|Visualizing Spatial Data}
@@ -435,6 +438,12 @@ define([
          * @type {Property}
          */
         viewFrom : createPropertyDescriptor('viewFrom'),
+        /**
+         * Gets or sets the static path.
+         * @memberof Entity.prototype
+         * @type {StaticPathGraphics}
+         */
+        staticPath : createPropertyTypeDescriptor('staticPath', StaticPathGraphics),
         /**
          * Gets or sets the wall.
          * @memberof Entity.prototype
