@@ -59,7 +59,7 @@ define([
         this.updater = undefined;
     }
 
-    function subSampleSampledProperty(property, start, stop, times, updateTime, referenceFrame, maximumStep, startingIndex, result) {
+    function subSampleSampledProperty(property, start, stop, times, referenceFrame, maximumStep, startingIndex, result) {
         var r = startingIndex;
         //Always step exactly on start (but only use it if it exists.)
         var tmp;
@@ -67,8 +67,6 @@ define([
         if (defined(tmp)) {
             result[r++] = tmp;
         }
-
-        var steppedOnNow = !defined(updateTime) || JulianDate.lessThanOrEquals(updateTime, start) || JulianDate.greaterThanOrEquals(updateTime, stop);
 
         //Iterate over all interval times and add the ones that fall in our
         //time range.  Note that times can contain data outside of
@@ -83,14 +81,7 @@ define([
         var sampleStepSize;
 
         while (t < len) {
-            if (!steppedOnNow && JulianDate.greaterThanOrEquals(current, updateTime)) {
-                tmp = property.getValueInReferenceFrame(updateTime, referenceFrame, result[r]);
-                if (defined(tmp)) {
-                    result[r++] = tmp;
-                }
-                steppedOnNow = true;
-            }
-            if (JulianDate.greaterThan(current, start) && JulianDate.lessThan(current, loopStop) && !current.equals(updateTime)) {
+            if (JulianDate.greaterThan(current, start) && JulianDate.lessThan(current, loopStop)) {
                 tmp = property.getValueInReferenceFrame(current, referenceFrame, result[r]);
                 if (defined(tmp)) {
                     result[r++] = tmp;
@@ -131,22 +122,13 @@ define([
         return r;
     }
 
-    function subSampleGenericProperty(property, start, stop, updateTime, referenceFrame, maximumStep, startingIndex, result) {
+    function subSampleGenericProperty(property, start, stop, referenceFrame, maximumStep, startingIndex, result) {
         var tmp;
         var i = 0;
         var index = startingIndex;
         var time = start;
         var stepSize = Math.max(maximumStep, 60);
-        var steppedOnNow = !defined(updateTime) || JulianDate.lessThanOrEquals(updateTime, start) || JulianDate.greaterThanOrEquals(updateTime, stop);
         while (JulianDate.lessThan(time, stop)) {
-            if (!steppedOnNow && JulianDate.greaterThanOrEquals(time, updateTime)) {
-                steppedOnNow = true;
-                tmp = property.getValueInReferenceFrame(updateTime, referenceFrame, result[index]);
-                if (defined(tmp)) {
-                    result[index] = tmp;
-                    index++;
-                }
-            }
             tmp = property.getValueInReferenceFrame(time, referenceFrame, result[index]);
             if (defined(tmp)) {
                 result[index] = tmp;
@@ -164,7 +146,7 @@ define([
         return index;
     }
 
-    function subSampleIntervalProperty(property, start, stop, updateTime, referenceFrame, maximumStep, startingIndex, result) {
+    function subSampleIntervalProperty(property, start, stop, referenceFrame, maximumStep, startingIndex, result) {
         subSampleIntervalPropertyScratch.start = start;
         subSampleIntervalPropertyScratch.stop = stop;
 
@@ -191,7 +173,7 @@ define([
         return index;
     }
 
-    function subSampleConstantProperty(property, start, stop, updateTime, referenceFrame, maximumStep, startingIndex, result) {
+    function subSampleConstantProperty(property, start, stop, referenceFrame, maximumStep, startingIndex, result) {
         var tmp = property.getValueInReferenceFrame(start, referenceFrame, result[startingIndex]);
         if (defined(tmp)) {
             result[startingIndex++] = tmp;
@@ -199,7 +181,7 @@ define([
         return startingIndex;
     }
 
-    function subSampleCompositeProperty(property, start, stop, updateTime, referenceFrame, maximumStep, startingIndex, result) {
+    function subSampleCompositeProperty(property, start, stop, referenceFrame, maximumStep, startingIndex, result) {
         subSampleCompositePropertyScratch.start = start;
         subSampleCompositePropertyScratch.stop = stop;
 
@@ -221,13 +203,13 @@ define([
                     sampleStop = intervalStop;
                 }
 
-                index = reallySubSample(interval.data, sampleStart, sampleStop, updateTime, referenceFrame, maximumStep, index, result);
+                index = reallySubSample(interval.data, sampleStart, sampleStop, referenceFrame, maximumStep, index, result);
             }
         }
         return index;
     }
 
-    function reallySubSample(property, start, stop, updateTime, referenceFrame, maximumStep, index, result) {
+    function reallySubSample(property, start, stop, referenceFrame, maximumStep, index, result) {
         var innerProperty = property;
 
         while (innerProperty instanceof ReferenceProperty || innerProperty instanceof ScaledPositionProperty) {
@@ -241,26 +223,26 @@ define([
 
         if (innerProperty instanceof SampledPositionProperty) {
             var times = innerProperty._property._times;
-            index = subSampleSampledProperty(property, start, stop, times, updateTime, referenceFrame, maximumStep, index, result);
+            index = subSampleSampledProperty(property, start, stop, times, referenceFrame, maximumStep, index, result);
         } else if (innerProperty instanceof CompositePositionProperty) {
-            index = subSampleCompositeProperty(property, start, stop, updateTime, referenceFrame, maximumStep, index, result);
+            index = subSampleCompositeProperty(property, start, stop, referenceFrame, maximumStep, index, result);
         } else if (innerProperty instanceof TimeIntervalCollectionPositionProperty) {
-            index = subSampleIntervalProperty(property, start, stop, updateTime, referenceFrame, maximumStep, index, result);
+            index = subSampleIntervalProperty(property, start, stop, referenceFrame, maximumStep, index, result);
         } else if (innerProperty instanceof ConstantPositionProperty) {
-            index = subSampleConstantProperty(property, start, stop, updateTime, referenceFrame, maximumStep, index, result);
+            index = subSampleConstantProperty(property, start, stop, referenceFrame, maximumStep, index, result);
         } else {
             //Fallback to generic sampling.
-            index = subSampleGenericProperty(property, start, stop, updateTime, referenceFrame, maximumStep, index, result);
+            index = subSampleGenericProperty(property, start, stop, referenceFrame, maximumStep, index, result);
         }
         return index;
     }
 
-    function subSample(property, start, stop, updateTime, referenceFrame, maximumStep, result) {
+    function subSample(property, start, stop, referenceFrame, maximumStep, result) {
         if (!defined(result)) {
             result = [];
         }
 
-        var length = reallySubSample(property, start, stop, updateTime, referenceFrame, maximumStep, 0, result);
+        var length = reallySubSample(property, start, stop, referenceFrame, maximumStep, 0, result);
         result.length = length;
         return result;
     }
@@ -294,44 +276,18 @@ define([
         var polyline = item.polyline;
         var show = entity.isShowing && (!defined(showProperty) || showProperty.getValue(time));
 
-        //While we want to show the path, there may not actually be anything to show
-        //depending on lead/trail settings.  Compute the interval of the path to
-        //show and check against actual availability.
+        //Compute the interval of the path to show based on availability.
         if (show) {
-            var leadTime = Property.getValueOrUndefined(staticPathGraphics._leadTime, time);
-            var trailTime = Property.getValueOrUndefined(staticPathGraphics._trailTime, time);
             var availability = entity._availability;
             var hasAvailability = defined(availability);
-            var hasLeadTime = defined(leadTime);
-            var hasTrailTime = defined(trailTime);
 
-            //Objects need to have either defined availability or both a lead and trail time in order to
-            //draw a path (since we can't draw "infinite" paths.
-            show = hasAvailability || (hasLeadTime && hasTrailTime);
-
-            //The final step is to compute the actual start/stop times of the path to show.
-            //If current time is outside of the availability interval, there's a chance that
-            //we won't have to draw anything anyway.
-            if (show) {
-                if (hasTrailTime) {
-                    sampleStart = JulianDate.addSeconds(time, -trailTime, new JulianDate());
-                }
-                if (hasLeadTime) {
-                    sampleStop = JulianDate.addSeconds(time, leadTime, new JulianDate());
-                }
-
-                if (hasAvailability) {
-                    var start = availability.start;
-                    var stop = availability.stop;
-
-                    if (!hasTrailTime || JulianDate.greaterThan(start, sampleStart)) {
-                        sampleStart = start;
-                    }
-
-                    if (!hasLeadTime || JulianDate.lessThan(stop, sampleStop)) {
-                        sampleStop = stop;
-                    }
-                }
+            //Objects need to have a defined availability in order to
+            //draw a path, since we can't draw "infinite" paths.
+            if (!hasAvailability) {
+                show = false;
+            } else {
+                sampleStart = availability.start;
+                sampleStop = availability.stop;
                 show = JulianDate.lessThan(sampleStart, sampleStop);
             }
         }
@@ -364,8 +320,12 @@ define([
 
         var resolution = Property.getValueOrDefault(staticPathGraphics._resolution, time, defaultResolution);
 
+        // TODO: How to tell when positionProperty is meaningfully changed?  There's a definitionChanged event...
+        if (!defined(polyline.positions[0])) {
+            polyline.positions = subSample(positionProperty, sampleStart, sampleStop, this._referenceFrame, resolution, polyline.positions.slice());
+        }
+
         polyline.show = true;
-        polyline.positions = subSample(positionProperty, sampleStart, sampleStop, time, this._referenceFrame, resolution, polyline.positions.slice());
         polyline.material = MaterialProperty.getValue(time, staticPathGraphics._material, polyline.material);
         polyline.width = Property.getValueOrDefault(staticPathGraphics._width, time, defaultWidth);
     };
