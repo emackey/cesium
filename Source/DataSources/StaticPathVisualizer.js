@@ -333,11 +333,12 @@ define([
                 fabric : {
                     uniforms : {
                         updateTime : new Cartesian3(0.0, 0.0, 0.0),
-                        color: junkMaterial.uniforms.evenColor  // TODO: Replace with color.
+                        color: junkMaterial.uniforms.evenColor || junkMaterial.uniforms.color  // TODO: Replace with color.
                     },
                     components : { // 'vec3(1.0)'
                         diffuse : 'color.rgb', //'vec3(0.5, 0.8, 1.0)',
-                        alpha : 'color.a * smoothstep(updateTime.x, updateTime.x - updateTime.y, materialInput.st.s) * smoothstep(0.0, updateTime.x - updateTime.y, materialInput.st.s)'
+                        alpha : 'color.a * smoothstep(updateTime.x, updateTime.x - updateTime.y, materialInput.st.s) * ' +
+                                          'smoothstep(0.0, updateTime.x - updateTime.y, materialInput.st.s)'
                         //alpha : '((materialInput.st.s < updateTime.x) ? 1.0 : 0.4)'  //'materialInput.st.s'
                     }
                 }
