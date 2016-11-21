@@ -132,6 +132,7 @@ define([
                         height : this._initialSize.y,
                         pixelFormat : this._pixelFormat
                     });
+console.log('TexAtlas: Get was called with no atlas, allocating new atlas ' + this._initialSize.x + ' x ' + this._initialSize.y);
                 }
                 return this._texture;
             }
@@ -203,6 +204,7 @@ define([
                 height : atlasHeight,
                 pixelFormat : textureAtlas._pixelFormat
             });
+console.log('TexAtlas: Allocating and copying to new larger atlas ' + atlasWidth + ' x ' + atlasHeight);
 
             var framebuffer = new Framebuffer({
                 context : context,
@@ -234,6 +236,7 @@ define([
                 height : initialHeight,
                 pixelFormat : textureAtlas._pixelFormat
             });
+console.log('TexAtlas: Initial size not enough, allocating new larger atlas ' + initialWidth + ' x ' + initialHeight);
             textureAtlas._root = new TextureAtlasNode(new Cartesian2(), new Cartesian2(initialWidth, initialHeight));
         }
     }
@@ -296,6 +299,38 @@ define([
             findNode(textureAtlas, node.childNode2, image);
     }
 
+    // :EdM: Canvas texture image debugging
+    // http://stackoverflow.com/a/18804083/836708
+    function createImageFromTexture(gl, texture, width, height) {
+        // Create a framebuffer backed by the texture
+        var framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+        // Read the contents of the framebuffer
+        var data = new Uint8Array(width * height * 4);
+        gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+        gl.deleteFramebuffer(framebuffer);
+
+        // Create a 2D canvas to store the result
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var context = canvas.getContext('2d');
+
+        // Copy the pixels to a 2D canvas
+        var imageData = context.createImageData(width, height);
+        imageData.data.set(data);
+        context.putImageData(imageData, 0, 0);
+
+        return canvas.toDataURL();
+        //var img = new Image();
+        //img.src = canvas.toDataURL();
+        //return img;
+    }
+    //var gl = edAtlas._texture._context._gl
+
     // Adds image of given index to the texture atlas. Called from addImage and addImages.
     function addImage(textureAtlas, image, index) {
         var node = findNode(textureAtlas, textureAtlas._root, image);
@@ -314,6 +349,9 @@ define([
             var h = nodeHeight / atlasHeight;
             textureAtlas._textureCoordinates[index] = new BoundingRectangle(x, y, w, h);
             textureAtlas._texture.copyFrom(image, node.bottomLeft.x, node.bottomLeft.y);
+console.log('TexAtlas: Adding new image x:' + node.bottomLeft.x + ' y:' + node.bottomLeft.y + ' w:' + nodeWidth + ' h:' + nodeHeight);
+window.edAtlas = textureAtlas;
+window.atlasUrl = createImageFromTexture(textureAtlas._texture._context._gl, textureAtlas._texture._texture, textureAtlas._texture.width, textureAtlas._texture.height);
         } else {
             // No node found, must resize the texture atlas.
             resizeAtlas(textureAtlas, image);
@@ -457,7 +495,7 @@ define([
      *
      * @example
      * atlas = atlas && atlas.destroy();
-     * 
+     *
      * @see TextureAtlas#isDestroyed
      */
     TextureAtlas.prototype.destroy = function() {
