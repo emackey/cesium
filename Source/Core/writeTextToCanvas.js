@@ -108,11 +108,23 @@ define([
         if (backgroundColor !== Color.TRANSPARENT) {
             context2D.fillStyle = backgroundColor.toCssColorString();
             context2D.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+            context2D.fillStyle = '#f00';
+            context2D.fillRect(0, 0, canvas.width, canvas.height);
+            if ((canvas.width > 2) && (canvas.height > 2)) {
+                context2D.fillStyle = '#ff0';
+                context2D.fillRect(1, 1, canvas.width-2, canvas.height-2);
+            }
+            if ((canvas.width > 4) && (canvas.height > 4)) {
+                context2D.fillStyle = '#080';
+                context2D.fillRect(2, 2, canvas.width-4, canvas.height-4);
+            }
         }
 
         if (stroke) {
             var strokeColor = defaultValue(options.strokeColor, Color.BLACK);
-            context2D.strokeStyle = strokeColor.toCssColorString();
+            //context2D.strokeStyle = strokeColor.toCssColorString();
+            context2D.strokeStyle = 'rgba(255, 255, 255, 0.4)';
             context2D.strokeText(text, padding, y);
         }
 

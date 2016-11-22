@@ -698,6 +698,7 @@ define([
                 return defaultValue(this._height, this._imageHeight);
             },
             set : function(value) {
+console.log('billboard height ' + value + ' formerly ' + this._height);
                 if (this._height !== value) {
                     this._height = value;
                     makeDirty(this, IMAGE_INDEX_INDEX);
@@ -990,6 +991,7 @@ define([
             var textureCoordinates = atlas.textureCoordinates[index];
             that._imageWidth = atlas.texture.width * textureCoordinates.width;
             that._imageHeight = atlas.texture.height * textureCoordinates.height;
+console.log('billboard image promise width ' + that._imageWidth + ' height ' + that._imageHeight);
 
             that._imageIndex = index;
             that._ready = true;

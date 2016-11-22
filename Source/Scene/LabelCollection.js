@@ -216,20 +216,30 @@ define([
     var glyphPixelOffset = new Cartesian2();
 
     function repositionAllGlyphs(label, resolutionScale) {
+console.log('reposition glyphs: ' + resolutionScale);
         var glyphs = label._glyphs;
         var glyph;
         var dimensions;
         var totalWidth = 0;
-        var maxHeight = 0;
+        //var maxHeight = 0;
+        var maxDescent = 0;
+        var maxY = 0;
 
         var glyphIndex = 0;
         var glyphLength = glyphs.length;
         for (glyphIndex = 0; glyphIndex < glyphLength; ++glyphIndex) {
             glyph = glyphs[glyphIndex];
             dimensions = glyph.dimensions;
+dimensions.descent = 0;
             totalWidth += dimensions.computedWidth;
-            maxHeight = Math.max(maxHeight, dimensions.height);
+            //maxHeight = Math.max(maxHeight, dimensions.height - dimensions.descent);
+            maxY = Math.max(maxY, dimensions.height - dimensions.descent);
+            maxDescent = Math.max(maxDescent, dimensions.descent);
+            console.log('Glyph ' + glyphIndex + ' width ' + dimensions.computedWidth + ' descent ' + dimensions.descent + ' height ' + dimensions.height);
         }
+        var maxHeight = maxY + maxDescent;
+        //var realMaxHeight = maxY + maxDescent;
+        console.log('totalWidth ' + totalWidth + ' maxY ' + maxY + ' maxheight ' + maxHeight + ' maxdescent ' + maxDescent);
 
         var scale = label._scale;
         var horizontalOrigin = label._horizontalOrigin;
@@ -248,22 +258,31 @@ define([
             glyph = glyphs[glyphIndex];
             dimensions = glyph.dimensions;
 
-            if (verticalOrigin === VerticalOrigin.BOTTOM || dimensions.height === maxHeight) {
+            //glyphPixelOffset.y = -dimensions.descent * scale;
+            //*
+            if (verticalOrigin === VerticalOrigin.BOTTOM) { // || dimensions.height === maxHeight) {
                 glyphPixelOffset.y = -dimensions.descent * scale;
             } else if (verticalOrigin === VerticalOrigin.TOP) {
-                glyphPixelOffset.y = -(maxHeight - dimensions.height) * scale - dimensions.descent * scale;
+                //glyphPixelOffset.y = -(maxHeight - dimensions.height) * scale - dimensions.descent * scale;
+                glyphPixelOffset.y = (dimensions.height - dimensions.descent - maxY) * scale;
             } else if (verticalOrigin === VerticalOrigin.CENTER) {
-                glyphPixelOffset.y = -(maxHeight - dimensions.height) / 2 * scale - dimensions.descent * scale;
+                //glyphPixelOffset.y = -(maxHeight - dimensions.height) / 2 * scale - dimensions.descent * scale;
+                glyphPixelOffset.y = 0;
             }
+            //*/
+            //glyphPixelOffset.y = (glyphIndex & 1) ? ((dimensions.height) * scale) : 0;
 
             glyphPixelOffset.y *= resolutionScale;
 
             if (defined(glyph.billboard)) {
                 glyph.billboard._setTranslate(glyphPixelOffset);
+                console.log('Glyph ' + glyphIndex + ' glyphPixelOffset.y ' + glyphPixelOffset.y/scale +
+                        ' billboardHeight ' + glyph.billboard.height);
             }
 
             glyphPixelOffset.x += dimensions.computedWidth * scale * resolutionScale;
         }
+        console.log('scale ' + scale);
     }
 
     function destroyLabel(labelCollection, label) {
