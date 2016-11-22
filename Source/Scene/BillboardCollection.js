@@ -917,7 +917,7 @@ define([
         }
 
         var textureWidth = billboardCollection._textureAtlas.texture.width;
-        var imageWidth = Math.ceil(defaultValue(billboard.width, textureWidth * width) * 0.5);
+        var imageWidth = Math.round(defaultValue(billboard.width, textureWidth * width));
         billboardCollection._maxSize = Math.max(billboardCollection._maxSize, imageWidth);
 
         var compressed0 = CesiumMath.clamp(imageWidth, 0.0, LEFT_SHIFT16);
@@ -972,7 +972,7 @@ define([
         }
 
         var dimensions = billboardCollection._textureAtlas.texture.dimensions;
-        var imageHeight = Math.ceil(defaultValue(billboard.height, dimensions.y * height) * 0.5);
+        var imageHeight = Math.round(defaultValue(billboard.height, dimensions.y * height));
         billboardCollection._maxSize = Math.max(billboardCollection._maxSize, imageHeight);
 
         var red = Color.floatToByte(color.red);

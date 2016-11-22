@@ -172,18 +172,19 @@ console.log('TexAtlas: Get was called with no atlas, allocating new atlas ' + th
         var context = textureAtlas._context;
         var numImages = textureAtlas.numberOfImages;
         var scalingFactor = 2.0;
+        var borderWidthInPixels = textureAtlas._borderWidthInPixels;
         if (numImages > 0) {
             var oldAtlasWidth = textureAtlas._texture.width;
             var oldAtlasHeight = textureAtlas._texture.height;
-            var atlasWidth = scalingFactor * (oldAtlasWidth + image.width + textureAtlas._borderWidthInPixels);
-            var atlasHeight = scalingFactor * (oldAtlasHeight + image.height + textureAtlas._borderWidthInPixels);
+            var atlasWidth = scalingFactor * (oldAtlasWidth + image.width + borderWidthInPixels);
+            var atlasHeight = scalingFactor * (oldAtlasHeight + image.height + borderWidthInPixels);
             var widthRatio = oldAtlasWidth / atlasWidth;
             var heightRatio = oldAtlasHeight / atlasHeight;
 
             // Create new node structure, putting the old root node in the bottom left.
-            var nodeBottomRight = new TextureAtlasNode(new Cartesian2(oldAtlasWidth + textureAtlas._borderWidthInPixels, 0.0), new Cartesian2(atlasWidth, oldAtlasHeight));
+            var nodeBottomRight = new TextureAtlasNode(new Cartesian2(oldAtlasWidth + borderWidthInPixels, borderWidthInPixels), new Cartesian2(atlasWidth, oldAtlasHeight));
             var nodeBottomHalf = new TextureAtlasNode(new Cartesian2(), new Cartesian2(atlasWidth, oldAtlasHeight), textureAtlas._root, nodeBottomRight);
-            var nodeTopHalf = new TextureAtlasNode(new Cartesian2(0.0, oldAtlasHeight + textureAtlas._borderWidthInPixels), new Cartesian2(atlasWidth, atlasHeight));
+            var nodeTopHalf = new TextureAtlasNode(new Cartesian2(borderWidthInPixels, oldAtlasHeight + borderWidthInPixels), new Cartesian2(atlasWidth, atlasHeight));
             var nodeMain = new TextureAtlasNode(new Cartesian2(), new Cartesian2(atlasWidth, atlasHeight), nodeBottomHalf, nodeTopHalf);
 
             // Resize texture coordinates.
@@ -221,8 +222,8 @@ console.log('TexAtlas: Allocating and copying to new larger atlas ' + atlasWidth
             textureAtlas._root = nodeMain;
         } else {
             // First image exceeds initialSize
-            var initialWidth = scalingFactor * (image.width + textureAtlas._borderWidthInPixels);
-            var initialHeight = scalingFactor * (image.height + textureAtlas._borderWidthInPixels);
+            var initialWidth = scalingFactor * (image.width + 2 * borderWidthInPixels);
+            var initialHeight = scalingFactor * (image.height + 2 * borderWidthInPixels);
             if(initialWidth < textureAtlas._initialSize.x) {
                 initialWidth = textureAtlas._initialSize.x;
             }
@@ -237,7 +238,8 @@ console.log('TexAtlas: Allocating and copying to new larger atlas ' + atlasWidth
                 pixelFormat : textureAtlas._pixelFormat
             });
 console.log('TexAtlas: Initial size not enough, allocating new larger atlas ' + initialWidth + ' x ' + initialHeight);
-            textureAtlas._root = new TextureAtlasNode(new Cartesian2(), new Cartesian2(initialWidth, initialHeight));
+            textureAtlas._root = new TextureAtlasNode(new Cartesian2(borderWidthInPixels, borderWidthInPixels),
+                new Cartesian2(initialWidth, initialHeight));
         }
     }
 
