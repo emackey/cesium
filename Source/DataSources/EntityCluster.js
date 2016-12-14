@@ -102,6 +102,22 @@ define([
         bbox.height += pixelRange * 2.0;
     }
 
+    function showDebugRectangle(rect, color) {
+        var div = document.createElement('div');
+        div.style.border = '1px solid ' + color;
+        div.style.position = 'absolute';
+        div.style.pointerEvents = 'none';
+        div.style.boxSizing = 'content-box';
+
+        div.style.left = rect.x - 1 + 'px';
+        div.style.top = rect.y - 1 + 'px';
+        div.style.width = rect.width + 'px';
+        div.style.height = rect.height + 'px';
+
+        document.body.appendChild(div);
+        return div;
+    }
+
     var labelBoundingBoxScratch = new BoundingRectangle();
 
     function getBoundingBox(item, coord, pixelRange, entityCluster, result) {
@@ -111,17 +127,25 @@ define([
             result = Billboard.getScreenSpaceBoundingBox(item, coord, result);
         } else if (defined(item._pointPrimitiveCollection) && entityCluster._clusterPoints) {
             result = PointPrimitive.getScreenSpaceBoundingBox(item, coord, result);
+        } else {
+console.warn('This is an unhandled code path that will not end well.');
         }
+//showDebugRectangle(result, 'rgba(255, 80, 0, 0.7)');
 
         expandBoundingBox(result, pixelRange);
 
-        if (entityCluster._clusterLabels && !defined(item._labelCollection) && defined(item.id) && hasLabelIndex(entityCluster, item.id) && defined(item.id._label)) {
-            var labelIndex = entityCluster._collectionIndicesByEntity[item.id];
+        if (entityCluster._clusterLabels && !defined(item._labelCollection) && defined(item.id) && hasLabelIndex(entityCluster, item.id.id) && defined(item.id._label)) {
+            var labelIndex = entityCluster._collectionIndicesByEntity[item.id.id].labelIndex;
             var label = entityCluster._labelCollection.get(labelIndex);
             var labelBBox = Label.getScreenSpaceBoundingBox(label, coord, labelBoundingBoxScratch);
+//console.log('label bounds x ' + labelBBox.x + ' y ' + labelBBox.y + ' width ' + labelBBox.width + ' height ' + labelBBox.height);
+//showDebugRectangle(labelBBox, 'rgba(255, 255, 0, 0.7)');
             expandBoundingBox(labelBBox, pixelRange);
             result = BoundingRectangle.union(result, labelBBox, result);
         }
+console.log('label bounds x ' + result.x + ' y ' + result.y + ' width ' + result.width + ' height ' + result.height);
+console.log('pink getBoundingBox (billboard + pixelRange + label)');
+showDebugRectangle(result, 'rgba(255, 0, 255, 0.7)');
 
         return result;
     }
@@ -129,8 +153,8 @@ define([
     function addNonClusteredItem(item, entityCluster) {
         item.clusterShow = true;
 
-        if (!defined(item._labelCollection) && defined(item.id) && hasLabelIndex(entityCluster, item.id) && defined(item.id._label)) {
-            var labelIndex = entityCluster._collectionIndicesByEntity[item.id];
+        if (!defined(item._labelCollection) && defined(item.id) && hasLabelIndex(entityCluster, item.id.id) && defined(item.id._label)) {
+            var labelIndex = entityCluster._collectionIndicesByEntity[item.id.id].labelIndex;  // Just getting the ID of the ID here.
             var label = entityCluster._labelCollection.get(labelIndex);
             label.clusterShow = true;
         }
@@ -182,6 +206,7 @@ define([
                 continue;
             }
 
+showDebugRectangle(coord, 'rgba(255, 255, 128, 0.7)');
             points.push({
                 index : i,
                 collection : collection,
@@ -196,6 +221,7 @@ define([
     var neighborBoundingRectangleScratch = new BoundingRectangle();
 
     function createDeclutterCallback(entityCluster) {
+        // Callback for scene.camera.changed.addEventListener(...)
         return function(amount) {
             if ((defined(amount) && amount < 0.05) || !entityCluster.enabled) {
                 return;
@@ -277,18 +303,22 @@ define([
             var collectionIndex;
 
             var index = kdbush(points, getX, getY, 64, Int32Array);
+console.log('~~~~ rethink clusters ~~~~~~~~~~~~~~~~~~~~');
 
             if (currentHeight < previousHeight) {
                 length = clusters.length;
                 for (i = 0; i < length; ++i) {
+console.log('existing cluster id ' + i);
                     var cluster = clusters[i];
 
                     if (!occluder.isPointVisible(cluster.position)) {
+                        console.log('is not visible.');
                         continue;
                     }
 
                     var coord = Billboard._computeScreenSpacePosition(Matrix4.IDENTITY, cluster.position, Cartesian3.ZERO, Cartesian2.ZERO, scene);
                     if (!defined(coord)) {
+                        console.log('does not have a screen position.');
                         continue;
                     }
 
@@ -303,9 +333,13 @@ define([
                     var minY = coord.y - height * 0.5;
                     var maxX = coord.x + width;
                     var maxY = coord.y + height;
+if (window.clusterRectDiv) window.clusterRectDiv.style.borderColor = 'rgba(40, 128, 0, 0.7)';
+console.log('has a cluster width ' + width + ' height ' + height);
+window.clusterRectDiv = showDebugRectangle({x: minX, y: minY, width: (maxX - minX), height: (maxY - minY)}, 'rgba(80, 255, 0, 0.7)');
 
                     neighbors = index.range(minX, minY, maxX, maxY);
                     neighborLength = neighbors.length;
+console.log('and has ' + neighborLength + ' neighbors');
                     numPoints = 0;
                     ids = [];
 
@@ -324,15 +358,19 @@ define([
                     if (numPoints >= minimumClusterSize) {
                         addCluster(cluster.position, numPoints, ids, entityCluster);
                         newClusters.push(cluster);
+console.log('preserving cluster of ' + numPoints);
 
                         for (j = 0; j < neighborLength; ++j) {
                             points[neighbors[j]].clustered = true;
                         }
+                    } else {
+console.log('discarding cluster of ' + numPoints);
                     }
                 }
             }
 
             length = points.length;
+console.log('examine ' + length + ' unclustered points');
             for (i = 0; i < length; ++i) {
                 var point = points[i];
                 if (point.clustered) {
@@ -350,6 +388,7 @@ define([
 
                 neighbors = index.range(bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height);
                 neighborLength = neighbors.length;
+console.log('Try to make new cluster of ' + neighborLength + ' neighbors');
 
                 var clusterPosition = Cartesian3.clone(item.position);
                 numPoints = 1;
@@ -374,6 +413,9 @@ define([
                 if (numPoints >= minimumClusterSize) {
                     var position = Cartesian3.multiplyByScalar(clusterPosition, 1.0 / numPoints, clusterPosition);
                     addCluster(position, numPoints, ids, entityCluster);
+console.log('NEW: add new cluster of ' + numPoints);
+showDebugRectangle(bbox, 'rgba(255, 80, 0, 0.7)');
+showDebugRectangle(totalBBox, 'rgba(0, 0, 255, 0.7)');
                     newClusters.push({
                         position : position,
                         width : totalBBox.width,
@@ -386,6 +428,7 @@ define([
                         points[neighbors[j]].clustered = true;
                     }
                 } else {
+console.log('add non-clustered item');  // "item" appears to be a billboard.
                     addNonClusteredItem(item, entityCluster);
                 }
             }
