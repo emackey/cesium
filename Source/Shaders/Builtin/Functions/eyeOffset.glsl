@@ -13,7 +13,7 @@ vec4 czm_eyeOffset(vec4 positionEC, vec3 eyeOffset)
 {
     // This equation is approximate in x and y.
     vec4 p = positionEC;
-    vec4 zEyeOffset = normalize(p) * eyeOffset.z;
+    vec4 zEyeOffset = normalize(p) * -eyeOffset.z * positionEC.z;
     p.xy += eyeOffset.xy + zEyeOffset.xy;
     p.z += zEyeOffset.z;
     return p;
