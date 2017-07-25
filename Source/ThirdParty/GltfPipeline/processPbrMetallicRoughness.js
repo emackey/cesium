@@ -484,7 +484,11 @@ define([
             fragmentShader += '    vec3 l = vec3(0.0, 0.0, 1.0);\n';
         }
         fragmentShader += '    vec3 h = normalize(v + l);\n';
-        fragmentShader += '    vec3 r = normalize(reflect(v, n));\n';
+        fragmentShader += '    vec3 r = normalize(czm_inverseViewRotation * normalize(reflect(v, n)));\n';
+        // Flipping the X vector is a cheap way to get the inverse of czm_temeToPseudoFixed, since that's a rotation about Z.
+        fragmentShader += '    r.x = -r.x;\n';
+        fragmentShader += '    r = -normalize(czm_temeToPseudoFixed * r);\n';
+        fragmentShader += '    r.x = -r.x;\n';
         fragmentShader += '    float NdotL = clamp(dot(n, l), 0.001, 1.0);\n';
         fragmentShader += '    float NdotV = abs(dot(n, v)) + 0.001;\n';
         fragmentShader += '    float NdotH = clamp(dot(n, h), 0.0, 1.0);\n';
@@ -508,7 +512,9 @@ define([
         fragmentShader += '    vec3 color = NdotL * lightColor * (diffuseContribution + specularContribution);\n';
 
         if (optimizeForCesium) {
+            // TODO: Can this be the overall color of the reflected environment?
             fragmentShader += '    vec3 diffuseIrradiance = vec3(0.5);\n';
+            // TODO: Compare terms of IBLColor to the ref shader
             fragmentShader += '    vec3 specularIrradiance = textureCube(czm_cubeMap, r).rgb;\n';
             fragmentShader += '    specularIrradiance = mix(specularIrradiance, diffuseIrradiance, roughness);\n'; // Fake LOD
             fragmentShader += '    vec2 brdfLUT = texture2D(czm_brdfLUT, vec2(NdotV, 1.0 - roughness)).rg;\n';
