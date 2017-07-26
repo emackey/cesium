@@ -240,6 +240,9 @@ define([
         };
         vertexShader += 'attribute vec3 a_position;\n';
         vertexShader += 'varying vec3 v_positionEC;\n';
+        if (optimizeForCesium) {
+            vertexShader += 'varying vec3 v_positionWC;\n';
+        }
 
         // Morph Target Weighting
         vertexShaderMain += '    vec3 weightedPosition = a_position;\n';
@@ -275,13 +278,20 @@ define([
 
         // Final position computation
         if (hasSkinning) {
-            vertexShaderMain += '    vec4 position = u_modelViewMatrix * skinMatrix * vec4(weightedPosition, 1.0);\n';
+            vertexShaderMain += '    vec4 position = skinMatrix * vec4(weightedPosition, 1.0);\n';
         } else {
-            vertexShaderMain += '    vec4 position = u_modelViewMatrix * vec4(weightedPosition, 1.0);\n';
+            vertexShaderMain += '    vec4 position = vec4(weightedPosition, 1.0);\n';
         }
+        if (optimizeForCesium) {
+            vertexShaderMain += '    v_positionWC = (czm_model * position).xyz;\n';
+        }
+        vertexShaderMain += '    position = u_modelViewMatrix * position;\n';
         vertexShaderMain += '    v_positionEC = position.xyz;\n';
         vertexShaderMain += '    gl_Position = u_projectionMatrix * position;\n';
         fragmentShader += 'varying vec3 v_positionEC;\n';
+        if (optimizeForCesium) {
+            fragmentShader += 'varying vec3 v_positionWC;\n';
+        }
 
         // Final normal computation
         if (hasNormals) {
@@ -483,11 +493,23 @@ define([
             fragmentShader += '    vec3 l = vec3(0.0, 0.0, 1.0);\n';
         }
         fragmentShader += '    vec3 h = normalize(v + l);\n';
-        fragmentShader += '    vec3 r = normalize(czm_inverseViewRotation * normalize(reflect(v, n)));\n';
-        // Flipping the X vector is a cheap way to get the inverse of czm_temeToPseudoFixed, since that's a rotation about Z.
-        fragmentShader += '    r.x = -r.x;\n';
-        fragmentShader += '    r = -normalize(czm_temeToPseudoFixed * r);\n';
-        fragmentShader += '    r.x = -r.x;\n';
+        if (optimizeForCesium) {
+            fragmentShader += '    vec3 r = normalize(czm_inverseViewRotation * normalize(reflect(v, n)));\n';
+            // testing
+            fragmentShader += '    czm_ellipsoid ellipsoid = czm_getWgs84EllipsoidEC();\n';
+            fragmentShader += '    float vertexRadius = length(v_positionWC);\n';
+//            fragmentShader += '    float vertexDistance = vertexRadius - ellipsoid.radius.z;\n';
+            fragmentShader += '    float ang = cos(atan(ellipsoid.radii.x, vertexRadius));\n';
+
+            fragmentShader += '    vec3 nadir = normalize(v_positionWC);\n';
+            fragmentShader += '    float nadirDotR = smoothstep(ang-0.01, ang+0.01, dot(r, nadir));\n';
+            // Flipping the X vector is a cheap way to get the inverse of czm_temeToPseudoFixed, since that's a rotation about Z.
+            fragmentShader += '    r.x = -r.x;\n';
+            fragmentShader += '    r = -normalize(czm_temeToPseudoFixed * r);\n';
+            fragmentShader += '    r.x = -r.x;\n';
+        } else {
+            fragmentShader += '    vec3 r = normalize(reflect(v, n));\n';
+        }
         fragmentShader += '    float NdotL = clamp(dot(n, l), 0.001, 1.0);\n';
         fragmentShader += '    float NdotV = abs(dot(n, v)) + 0.001;\n';
         fragmentShader += '    float NdotH = clamp(dot(n, h), 0.0, 1.0);\n';
@@ -516,6 +538,7 @@ define([
             // TODO: Compare terms of IBLColor to the ref shader
             fragmentShader += '    vec3 specularIrradiance = textureCube(czm_cubeMap, r).rgb;\n';
             fragmentShader += '    specularIrradiance = mix(specularIrradiance, diffuseIrradiance, roughness);\n'; // Fake LOD
+            fragmentShader += '    specularIrradiance = mix(specularIrradiance, vec3(1.,0.,1.), nadirDotR);\n'; // Nadir dot test
             fragmentShader += '    vec2 brdfLUT = texture2D(czm_brdfLUT, vec2(NdotV, 1.0 - roughness)).rg;\n';
             fragmentShader += '    vec3 IBLColor = (diffuseIrradiance * diffuseColor) + (specularIrradiance * (specularColor * brdfLUT.x + brdfLUT.y));\n';
             fragmentShader += '    color += IBLColor;\n';
