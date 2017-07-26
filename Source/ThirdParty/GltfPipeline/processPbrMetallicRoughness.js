@@ -496,11 +496,10 @@ define([
         fragmentShader += '    vec3 h = normalize(v + l);\n';
         if (optimizeForCesium) {
             fragmentShader += '    vec3 r = normalize(czm_inverseViewRotation * normalize(reflect(v, n)));\n';
-            // testing
+            // Figure out if the reflection vector hits the ellipsoid
             fragmentShader += '    czm_ellipsoid ellipsoid = czm_getWgs84EllipsoidEC();\n';
             fragmentShader += '    float vertexRadius = length(v_positionWC);\n';
-//            fragmentShader += '    float vertexDistance = vertexRadius - ellipsoid.radius.z;\n';
-            fragmentShader += '    float ang = cos(atan(ellipsoid.radii.x, vertexRadius));\n';
+            fragmentShader += '    float ang = 1.0 - ellipsoid.radii.x / vertexRadius;\n';
 
             fragmentShader += '    vec3 nadir = normalize(v_positionWC);\n';
             fragmentShader += '    float nadirDotR = smoothstep(ang-0.01, ang+0.01, dot(r, nadir));\n';
@@ -539,7 +538,7 @@ define([
             // TODO: Compare terms of IBLColor to the ref shader
             fragmentShader += '    vec3 specularIrradiance = textureCube(czm_cubeMap, r).rgb;\n';
             fragmentShader += '    specularIrradiance = mix(specularIrradiance, diffuseIrradiance, roughness);\n'; // Fake LOD
-            fragmentShader += '    specularIrradiance = mix(specularIrradiance, vec3(1.,0.,1.), nadirDotR);\n'; // Nadir dot test
+            fragmentShader += '    specularIrradiance = mix(specularIrradiance, vec3(ellipsoid.radii.x / vertexRadius,0.,1.), nadirDotR);\n'; // Nadir dot test
             fragmentShader += '    vec2 brdfLUT = texture2D(czm_brdfLUT, vec2(NdotV, 1.0 - roughness)).rg;\n';
             fragmentShader += '    vec3 IBLColor = (diffuseIrradiance * diffuseColor) + (specularIrradiance * (specularColor * brdfLUT.x + brdfLUT.y));\n';
             fragmentShader += '    color += IBLColor;\n';
