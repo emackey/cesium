@@ -487,7 +487,7 @@ define([
         fragmentShader += '    vec3 v = -normalize(v_positionEC);\n';
 
         // Generate fragment shader's lighting block
-        fragmentShader += '    vec3 lightColor = vec3(1.0, 1.0, 1.0) * 2.0;\n';
+        fragmentShader += '    vec3 lightColor = vec3(1.0, 1.0, 1.0);\n';
         if (optimizeForCesium) {
             fragmentShader += '    vec3 l = normalize(czm_sunDirectionEC);\n';
         } else {
