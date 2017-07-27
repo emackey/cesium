@@ -81,6 +81,7 @@ define([
                     var inertialCartesian = Matrix3.multiplyByVector(toInertial, cartesian, updateTransformCartesian3Scratch5);
                     var inertialDeltaCartesian = Matrix3.multiplyByVector(toInertialDelta, deltaCartesian, updateTransformCartesian3Scratch6);
 
+                        /* TEMPORARILY DISABLED -- DON'T MERGE THIS COMMENT
                     Cartesian3.subtract(inertialCartesian, inertialDeltaCartesian, updateTransformCartesian3Scratch4);
                     var inertialVelocity = Cartesian3.magnitude(updateTransformCartesian3Scratch4) * 1000.0; // meters/sec
 
@@ -88,7 +89,7 @@ define([
                     // Consider adding this to Cesium.Ellipsoid?
                     var mu = 3.986004418e14; // m^3 / sec^2
 
-                    var semiMajorAxis = -mu / (inertialVelocity * inertialVelocity - (2 * mu / Cartesian3.magnitude(inertialCartesian)));
+                    //var semiMajorAxis = -mu / (inertialVelocity * inertialVelocity - (2 * mu / Cartesian3.magnitude(inertialCartesian)));
 
                     if (semiMajorAxis < 0 || semiMajorAxis > northUpAxisFactor * ellipsoid.maximumRadius) {
                         // North-up viewing from deep space.
@@ -112,7 +113,7 @@ define([
 
                             hasBasis = true;
                         }
-                    } else if (!Cartesian3.equalsEpsilon(cartesian, deltaCartesian, CesiumMath.EPSILON7)) {
+                    } else */ if (!Cartesian3.equalsEpsilon(cartesian, deltaCartesian, CesiumMath.EPSILON7)) {
                         // Approximation of VVLH (Vehicle Velocity Local Horizontal) with the Z-axis flipped.
 
                         // Z along the position
