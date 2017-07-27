@@ -499,10 +499,8 @@ define([
             // Figure out if the reflection vector hits the ellipsoid
             fragmentShader += '    czm_ellipsoid ellipsoid = czm_getWgs84EllipsoidEC();\n';
             fragmentShader += '    float vertexRadius = length(v_positionWC);\n';
-            fragmentShader += '    float ang = 1.0 - ellipsoid.radii.x / vertexRadius;\n';
-
-            fragmentShader += '    vec3 nadir = normalize(v_positionWC);\n';
-            fragmentShader += '    float nadirDotR = smoothstep(ang-0.01, ang+0.01, dot(r, nadir));\n';
+            fragmentShader += '    float horizonDotNadir = 1.0 - ellipsoid.radii.x / vertexRadius;\n';
+            fragmentShader += '    float reflectionDotNadir = dot(r, normalize(v_positionWC));\n';
             // Flipping the X vector is a cheap way to get the inverse of czm_temeToPseudoFixed, since that's a rotation about Z.
             fragmentShader += '    r.x = -r.x;\n';
             fragmentShader += '    r = -normalize(czm_temeToPseudoFixed * r);\n';
@@ -533,12 +531,27 @@ define([
         fragmentShader += '    vec3 color = NdotL * lightColor * (diffuseContribution + specularContribution);\n';
 
         if (optimizeForCesium) {
-            // TODO: Can this be the overall color of the reflected environment?
             fragmentShader += '    vec3 diffuseIrradiance = vec3(0.5);\n';
-            // TODO: Compare terms of IBLColor to the ref shader
-            fragmentShader += '    vec3 specularIrradiance = textureCube(czm_cubeMap, r).rgb;\n';
-            fragmentShader += '    specularIrradiance = mix(specularIrradiance, diffuseIrradiance, roughness);\n'; // Fake LOD
-            fragmentShader += '    specularIrradiance = mix(specularIrradiance, vec3(ellipsoid.radii.x / vertexRadius,0.,1.), nadirDotR);\n'; // Nadir dot test
+            fragmentShader += '    float inverseRoughness = 1.0 - roughness;\n';
+            fragmentShader += '    inverseRoughness *= inverseRoughness;\n';
+            fragmentShader += '    vec3 sceneSkyBox = textureCube(czm_cubeMap, r).rgb * inverseRoughness;\n';
+
+            fragmentShader += '    float atmosphereHeight = 0.05;\n';
+            fragmentShader += '    float blendRegionSize = 0.1 * ((1.0 - inverseRoughness) * 8.0 + 1.1 - horizonDotNadir);\n';
+            fragmentShader += '    float farAboveHorizon = clamp(horizonDotNadir - blendRegionSize * 0.5, 1.0e-10 - blendRegionSize, 0.99999);\n';
+            fragmentShader += '    float aroundHorizon = clamp(horizonDotNadir + blendRegionSize * 0.5, 1.0e-10 - blendRegionSize, 0.99999);\n';
+            fragmentShader += '    float farBelowHorizon = clamp(horizonDotNadir + blendRegionSize * 1.5, 1.0e-10 - blendRegionSize, 0.99999);\n';
+
+            fragmentShader += '    vec3 belowHorizonColor = mix(vec3(0.1, 0.2, 0.4), vec3(0.2, 0.5, 0.7), smoothstep(0.0, atmosphereHeight, horizonDotNadir));\n';
+            fragmentShader += '    vec3 nadirColor = belowHorizonColor * 0.5;\n';
+            fragmentShader += '    vec3 aboveHorizonColor = vec3(0.8, 0.9, 0.95);\n';
+            fragmentShader += '    vec3 blueSkyColor = mix(vec3(0.09, 0.13, 0.24), aboveHorizonColor, reflectionDotNadir * inverseRoughness * 0.5 + 0.5);\n';
+            fragmentShader += '    vec3 zenithColor = mix(blueSkyColor, sceneSkyBox, smoothstep(0.0, atmosphereHeight, horizonDotNadir));\n';
+
+            fragmentShader += '    vec3 specularIrradiance = mix(zenithColor, aboveHorizonColor, smoothstep(farAboveHorizon, aroundHorizon, reflectionDotNadir) * inverseRoughness);\n';
+            fragmentShader += '    specularIrradiance = mix(specularIrradiance, belowHorizonColor, smoothstep(aroundHorizon, farBelowHorizon, reflectionDotNadir) * inverseRoughness);\n';
+            fragmentShader += '    specularIrradiance = mix(specularIrradiance, nadirColor, smoothstep(farBelowHorizon, 1.0, reflectionDotNadir) * inverseRoughness);\n';
+
             fragmentShader += '    vec2 brdfLUT = texture2D(czm_brdfLUT, vec2(NdotV, 1.0 - roughness)).rg;\n';
             fragmentShader += '    vec3 IBLColor = (diffuseIrradiance * diffuseColor) + (specularIrradiance * (specularColor * brdfLUT.x + brdfLUT.y));\n';
             fragmentShader += '    color += IBLColor;\n';
