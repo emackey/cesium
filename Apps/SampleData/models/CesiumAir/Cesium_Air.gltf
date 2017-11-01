@@ -212,7 +212,7 @@
         }
     },
     "animations": {
-        "animation_0": {
+        "Right Propeller": {
             "channels": [
                 {
                     "sampler": "animation_0_rotation_sampler",
@@ -234,7 +234,7 @@
                 }
             }
         },
-        "animation_1": {
+        "Left Propeller": {
             "channels": [
                 {
                     "sampler": "animation_1_rotation_sampler",
