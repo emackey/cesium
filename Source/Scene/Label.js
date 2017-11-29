@@ -1312,8 +1312,10 @@ define([
     }
 
     //To add another language, simply add it's Unicode block range(s) to the below regex.
-    var hebrew = '\u05D0-\u05EA';
-    var arabic = '\u0600-\u06FF\u0750–\u077F\u08A0–\u08FF';
+    //Note that double-slashes are used, to get these characters decoded on the client,
+    //not decoded in the Cesium build/combine/minifiy process.
+    var hebrew = '\\u05D0-\\u05EA';
+    var arabic = '\\u0600-\\u06FF\\u0750–\\u077F\\u08A0–\\u08FF';
     var rtlChars = new RegExp('[' + hebrew + arabic + ']');
 
     /**
