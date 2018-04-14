@@ -582,8 +582,8 @@ define([
             fragmentShader += '    float farBelowHorizon = clamp(horizonDotNadir + blendRegionSize * 1.5, 1.0e-10 - blendRegionSize, 0.99999);\n';
             fragmentShader += '    float smoothstepHeight = smoothstep(0.0, atmosphereHeight, horizonDotNadir);\n';
 
-            fragmentShader += '    vec3 belowHorizonColor = mix(vec3(0.2, 0.3, 0.45), vec3(0.4, 0.7, 0.9), smoothstepHeight);\n';
-            fragmentShader += '    vec3 nadirColor = belowHorizonColor * 0.5;\n';
+            fragmentShader += '    vec3 belowHorizonColor = mix(vec3(0.1, 0.15, 0.22), vec3(0.4, 0.7, 0.9), smoothstepHeight);\n';
+            fragmentShader += '    vec3 nadirColor = belowHorizonColor * 0.25;\n';
             fragmentShader += '    vec3 aboveHorizonColor = vec3(0.9, 0.95, 1.0);\n';
             fragmentShader += '    vec3 blueSkyColor = mix(vec3(0.18, 0.26, 0.48), aboveHorizonColor, reflectionDotNadir * inverseRoughness * 0.5 + 0.75);\n';
             fragmentShader += '    vec3 zenithColor = mix(blueSkyColor, sceneSkyBox, smoothstepHeight);\n';
@@ -598,7 +598,7 @@ define([
             fragmentShader += '    specularIrradiance = mix(specularIrradiance, nadirColor, smoothstep(farBelowHorizon, 1.0, reflectionDotNadir) * inverseRoughness);\n';
             fragmentShader += '    specularIrradiance = mix(specularIrradiance, blueSkyColor, (1.0 - inverseRoughness) * (1.1 - horizonDotNadir));\n';
 
-            fragmentShader += '    vec2 brdfLut = texture2D(czm_brdfLut, vec2(NdotV, 1.0 - roughness)).rg;\n';
+            fragmentShader += '    vec2 brdfLut = SRGBtoLINEAR(texture2D(czm_brdfLut, vec2(NdotV, 1.0 - roughness))).rg;\n';
             fragmentShader += '    vec3 IBLColor = (diffuseIrradiance * diffuseColor) + (specularIrradiance * (specularColor * brdfLut.x + brdfLut.y));\n';
             fragmentShader += '    color += IBLColor;\n';
         }
