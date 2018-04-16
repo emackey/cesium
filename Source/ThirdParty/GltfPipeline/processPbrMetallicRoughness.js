@@ -540,6 +540,7 @@ define([
             fragmentShader += '    float vertexRadius = length(v_positionWC);\n';
             fragmentShader += '    float horizonDotNadir = 1.0 - ellipsoid.radii.x / vertexRadius;\n';
             fragmentShader += '    float reflectionDotNadir = dot(r, normalize(v_positionWC));\n';
+            fragmentShader += '    float sunDotNadir = dot(normalize(czm_sunDirectionWC), normalize(v_positionWC));\n';
             // Flipping the X vector is a cheap way to get the inverse of czm_temeToPseudoFixed, since that's a rotation about Z.
             fragmentShader += '    r.x = -r.x;\n';
             fragmentShader += '    r = -normalize(czm_temeToPseudoFixed * r);\n';
@@ -600,7 +601,9 @@ define([
 
             fragmentShader += '    vec2 brdfLut = SRGBtoLINEAR(texture2D(czm_brdfLut, vec2(NdotV, 1.0 - roughness))).rg;\n';
             fragmentShader += '    vec3 IBLColor = (diffuseIrradiance * diffuseColor) + (specularIrradiance * (specularColor * brdfLut.x + brdfLut.y));\n';
-            fragmentShader += '    color += IBLColor;\n';
+            //fragmentShader += '    color += IBLColor;\n';
+            fragmentShader += '    float sunContribution = 1.0 - smoothstep(0.0, atmosphereHeight, horizonDotNadir - sunDotNadir);\n';
+            fragmentShader += '    color = (color * sunContribution) + IBLColor * (sunContribution * 0.8 + 0.2);\n';
         }
 
         if (defined(parameterValues.occlusionTexture)) {
