@@ -42,7 +42,7 @@ define([
 
         this._xysFileUrlTemplate = Resource.createIfNeeded(options.xysFileUrlTemplate);
         this._interpolationOrder = defaultValue(options.interpolationOrder, 9);
-        this._sampleZeroJulianEphemerisDate = defaultValue(options.sampleZeroJulianEphemerisDate, 2442396.5);
+        this._sampleZeroJulianEphemerisDate = defaultValue(options.sampleZeroJulianEphemerisDate, 2442396.5);  // 1974-12-15T00:00:00Z
         this._sampleZeroDateTT = new JulianDate(this._sampleZeroJulianEphemerisDate, 0.0, TimeStandard.TAI);
         this._stepSizeDays = defaultValue(options.stepSizeDays, 1.0);
         this._samplesPerXysFile = defaultValue(options.samplesPerXysFile, 1000);

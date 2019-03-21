@@ -2,10 +2,12 @@ define([
         'Cesium/Core/Cartesian3',
         'Cesium/Core/createWorldTerrain',
         'Cesium/Core/defined',
+        'Cesium/Core/EarthOrientationParameters',
         'Cesium/Core/formatError',
         'Cesium/Core/Math',
         'Cesium/Core/objectToQuery',
         'Cesium/Core/queryToObject',
+        'Cesium/Core/Transforms',
         'Cesium/DataSources/CzmlDataSource',
         'Cesium/DataSources/GeoJsonDataSource',
         'Cesium/DataSources/KmlDataSource',
@@ -18,10 +20,12 @@ define([
         Cartesian3,
         createWorldTerrain,
         defined,
+        EarthOrientationParameters,
         formatError,
         CesiumMath,
         objectToQuery,
         queryToObject,
+        Transforms,
         CzmlDataSource,
         GeoJsonDataSource,
         KmlDataSource,
@@ -51,6 +55,9 @@ define([
        saveCamera=false    Don't automatically update the camera view in the URL when it changes.
      */
     var endUserOptions = queryToObject(window.location.search.substring(1));
+
+    var eop = new EarthOrientationParameters({ url : '../SampleData/EOP.json' });
+    Transforms.earthOrientationParameters = eop;
 
     var imageryProvider;
     if (defined(endUserOptions.tmsImageryUrl)) {
