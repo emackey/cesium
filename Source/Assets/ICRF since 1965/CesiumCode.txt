@@ -1,0 +1,14 @@
+Cesium.Transforms.iau2006XysData = new Cesium.Iau2006XysData({
+
+xysFileUrlTemplate: 'path/to/wherever/IAU2006_XYS/IAU2006_XYS_{0}.json',
+
+// different than defaults
+sampleZeroJulianEphemerisDate: 2438761.5,
+totalSamples: 31061,
+
+// same as defaults
+interpolationOrder: 9,
+stepSizeDays: 1, 
+samplesPerXysFile: 1000
+
+});

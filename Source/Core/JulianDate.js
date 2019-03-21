@@ -1045,6 +1045,7 @@ define([
      */
     JulianDate.leapSeconds = [
 
+        // In theory, we shouldn't need to specify these, as they should come in automatically from the new EOP file.
         new LeapSecond(new JulianDate(2439999, 43210.0, TimeStandard.TAI), 7), // 1968-05-23
         new LeapSecond(new JulianDate(2440346, 43210.0, TimeStandard.TAI), 8), // 1969-05-05
         new LeapSecond(new JulianDate(2440684, 43210.0, TimeStandard.TAI), 9), // 1970-04-08

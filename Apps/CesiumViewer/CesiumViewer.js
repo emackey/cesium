@@ -4,6 +4,7 @@ define([
         'Cesium/Core/defined',
         'Cesium/Core/EarthOrientationParameters',
         'Cesium/Core/formatError',
+        'Cesium/Core/Iau2006XysData',
         'Cesium/Core/Math',
         'Cesium/Core/objectToQuery',
         'Cesium/Core/queryToObject',
@@ -22,6 +23,7 @@ define([
         defined,
         EarthOrientationParameters,
         formatError,
+        Iau2006XysData,
         CesiumMath,
         objectToQuery,
         queryToObject,
@@ -55,6 +57,20 @@ define([
        saveCamera=false    Don't automatically update the camera view in the URL when it changes.
      */
     var endUserOptions = queryToObject(window.location.search.substring(1));
+
+    Transforms.iau2006XysData = new Iau2006XysData({
+
+        //xysFileUrlTemplate: 'path/to/wherever/IAU2006_XYS/IAU2006_XYS_{0}.json',
+
+        // different than defaults
+        sampleZeroJulianEphemerisDate: 2438761.5,
+        totalSamples: 31061,
+
+        // same as defaults
+        interpolationOrder: 9,
+        stepSizeDays: 1,
+        samplesPerXysFile: 1000
+    });
 
     var eop = new EarthOrientationParameters({ url : '../SampleData/EOP.json' });
     Transforms.earthOrientationParameters = eop;
