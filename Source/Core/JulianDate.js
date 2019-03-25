@@ -1051,6 +1051,9 @@ define([
         new LeapSecond(new JulianDate(2440684, 43210.0, TimeStandard.TAI), 9), // 1970-04-08
         new LeapSecond(new JulianDate(2441016, 43210.0, TimeStandard.TAI), 10), // 1971-03-06
 
+                               // This is in Cesium master, but overridden here by the "fake" 1971 leap second.
+                               //new LeapSecond(new JulianDate(2441317, 43210.0, TimeStandard.TAI), 10), // January 1, 1972 00:00:00 UTC
+
                                new LeapSecond(new JulianDate(2441499, 43211.0, TimeStandard.TAI), 11), // July 1, 1972 00:00:00 UTC
                                new LeapSecond(new JulianDate(2441683, 43212.0, TimeStandard.TAI), 12), // January 1, 1973 00:00:00 UTC
                                new LeapSecond(new JulianDate(2442048, 43213.0, TimeStandard.TAI), 13), // January 1, 1974 00:00:00 UTC
